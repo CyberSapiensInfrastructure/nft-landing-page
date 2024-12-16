@@ -1,4 +1,4 @@
-import NFTDetail from './pages/NFTDetail';
+import { NFTDetail } from './pages/NFTDetail';
 
 function App() {
   return (

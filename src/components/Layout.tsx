@@ -519,8 +519,8 @@ const Layout: React.FC = () => {
       <Header />
 
       {/* Main Content */}
-      <div className="flex-1 relative mt-16">
-        <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex-1 relative mt-12">
+        <div className="flex h-[calc(100vh-3.5rem)]">
           {/* Sol Kolon - NFT Listesi */}
           <div className="flex-1 h-full">
             <div className="h-full relative">
@@ -639,7 +639,9 @@ const Layout: React.FC = () => {
         onClose={() => setIsBottomSheetOpen(false)}
       />
 
-      <Footer />
+      <div className="mt-4">
+        <Footer />
+      </div>
       <StackedNotifications />
     </div>
   );
