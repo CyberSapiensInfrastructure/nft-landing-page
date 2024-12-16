@@ -110,108 +110,85 @@ export const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, sel
       </div>
 
       {/* Mobile Filter Bar */}
-      <div className="lg:hidden sticky top-0 z-20 w-full bg-[#0c0c0c]/95 backdrop-blur-md border-b border-[#a8c7fa]/10">
-        <div className="flex items-center justify-between p-4">
-          {/* Filter Dropdown */}
-          <div className="relative">
+      <div className="lg:hidden fixed top-[3.5rem] left-0 right-0 z-30 bg-[#0c0c0c]/95 backdrop-blur-md border-b border-[#a8c7fa]/10">
+        {/* All/My NFTs ve View Toggle */}
+        <div className="flex items-center justify-between p-3">
+          {/* All/My NFTs Toggle */}
+          <div className="flex gap-1.5 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="flex items-center gap-2 px-3 py-2 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10"
+              onClick={() => handleTabChange('all')}
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                activeTab === 'all'
+                  ? "bg-[#7042f88b] text-white"
+                  : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+              }`}
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              <span className="text-sm">Filters</span>
+              All NFTs
             </button>
+            <button
+              onClick={() => handleTabChange('my')}
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                activeTab === 'my'
+                  ? "bg-[#7042f88b] text-white"
+                  : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+              }`}
+            >
+              My NFTs
+            </button>
+          </div>
 
-            {/* Mobile Filter Menu */}
-            {isMobileMenuOpen && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-xl shadow-xl">
-                {/* Filter Options */}
-                <div className="p-2">
-                  {filters.map((filter) => (
-                    <button
-                      key={filter.id}
-                      onClick={() => {
-                        setFilterSelected(filter.id);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
-                        ${filterSelected === filter.id
-                          ? "bg-[#7042f88b] text-white"
-                          : "text-[#a8c7fa]/60 hover:text-[#a8c7fa] hover:bg-[#a8c7fa]/10"
-                        }`}
-                    >
-                      {filter.icon}
-                      <span>{filter.title}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+          {/* View Toggle */}
+          <div className="flex gap-1.5 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
+            <button
+              onClick={() => onViewChange('grid')}
+              className={`flex items-center justify-center p-1.5 rounded-lg transition-all ${
+                view === 'grid'
+                  ? "bg-[#7042f88b] text-white"
+                  : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+              }`}
+            >
+              <ViewGridIcon />
+            </button>
+            <button
+              onClick={() => onViewChange('list')}
+              className={`flex items-center justify-center p-1.5 rounded-lg transition-all ${
+                view === 'list'
+                  ? "bg-[#7042f88b] text-white"
+                  : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+              }`}
+            >
+              <ViewListIcon />
+            </button>
+          </div>
+        </div>
+
+        {/* Filter Buttons */}
+        <div className="overflow-x-auto scrollbar-none">
+          <div className="flex gap-1.5 p-3 pt-0 min-w-min">
+            {filters.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => setFilterSelected(filter.id)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all
+                  ${filterSelected === filter.id
+                    ? "bg-[#7042f88b] text-white"
+                    : "bg-[#0c0c0c]/80 text-[#a8c7fa]/60 hover:text-[#a8c7fa] border border-[#a8c7fa]/10"
+                  }`}
+              >
+                <svg className="w-4 h-4">{filter.icon}</svg>
+                <span>{filter.title}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 ${isMenuCollapsed ? 'lg:ml-[60px]' : 'lg:ml-[200px]'} overflow-hidden transition-all duration-300`}>
-        {/* Fixed Header Controls */}
-        <div className="sticky top-0 z-10">
-          <div className="flex items-center justify-between p-4">
-            {/* All/My NFTs Toggle */}
-            <div className="flex gap-2 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
-              <button
-                onClick={() => handleTabChange('all')}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === 'all'
-                    ? "bg-[#7042f88b] text-white"
-                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-                }`}
-              >
-                All NFTs
-              </button>
-              <button
-                onClick={() => handleTabChange('my')}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === 'my'
-                    ? "bg-[#7042f88b] text-white"
-                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-                }`}
-              >
-                My NFTs
-              </button>
-            </div>
-
-            {/* View Toggle */}
-            <div className="flex gap-2 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
-              <button
-                onClick={() => onViewChange('grid')}
-                className={`flex items-center justify-center p-2 rounded-lg transition-all ${
-                  view === 'grid'
-                    ? "bg-[#7042f88b] text-white"
-                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-                }`}
-              >
-                <ViewGridIcon />
-              </button>
-              <button
-                onClick={() => onViewChange('list')}
-                className={`flex items-center justify-center p-2 rounded-lg transition-all ${
-                  view === 'list'
-                    ? "bg-[#7042f88b] text-white"
-                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-                }`}
-              >
-                <ViewListIcon />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Scrollable Content Area */}
-        <div className="h-[calc(100vh-10rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-[#a8c7fa]/10 scrollbar-track-transparent">
+      <div className={`flex-1 ${isMenuCollapsed ? 'lg:ml-[60px]' : 'lg:ml-[200px]'} min-h-screen transition-all duration-300 ${!isMenuCollapsed && 'lg:pt-0 pt-28'}`}>
+        {/* Content Area */}
+        <div className="w-full">
           {view === 'grid' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-3">
               {nfts.map((nft) => (
                 <div 
                   key={nft.id}
@@ -253,24 +230,24 @@ export const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, sel
               ))}
             </div>
           ) : (
-            <div className="space-y-1 p-4">
+            <div className="space-y-1 p-3">
               {nfts.map((nft) => (
                 <div 
                   key={nft.id}
                   onClick={() => onSelect(nft)}
-                  className={`flex items-center gap-3 border border-[#a8c7fa]/10 
-                    p-2.5 rounded-xl hover:bg-[#a8c7fa]/5 transition-all duration-300 cursor-pointer
+                  className={`flex items-center gap-2.5 border border-[#a8c7fa]/10 
+                    p-2 rounded-xl hover:bg-[#a8c7fa]/5 transition-all duration-300 cursor-pointer
                     ${selectedNFTId === nft.id ? 'ring-2 ring-[#7042f88b] bg-[#7042f88b]/5' : ''}`}
                 >
                   <img 
                     src={nft.image} 
                     alt={nft.name}
-                    className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
+                    className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
                   />
                   <div className="flex-1 flex justify-between items-center min-w-0">
                     <div className="space-y-0.5 min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-medium text-white truncate">{nft.name}</h3>
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="text-xs font-medium text-white truncate">{nft.name}</h3>
                         <div className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap
                           ${nft.status === 'completed' 
                             ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
@@ -279,12 +256,12 @@ export const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, sel
                           {nft.status === 'completed' ? 'Completed' : 'In Progress'}
                         </div>
                       </div>
-                      <div className="flex gap-3 text-xs">
-                        <div className="flex items-center gap-1.5">
+                      <div className="flex gap-2 text-[10px]">
+                        <div className="flex items-center gap-1">
                           <span className="text-[#a8c7fa]/60">Mission:</span>
                           <span className="text-white font-medium">{nft.missionAmount}</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1">
                           <span className="text-[#a8c7fa]/60">Expires:</span>
                           <span className="text-white font-medium truncate">{nft.expireDate}</span>
                         </div>

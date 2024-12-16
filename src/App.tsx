@@ -1,4 +1,8 @@
+import Layout from './components/Layout';
+import { Routes } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { NFTDetail } from './pages/NFTDetail';
+import { Error } from './components/Error';
 
 function App() {
   return (

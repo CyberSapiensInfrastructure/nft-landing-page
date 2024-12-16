@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from "react";
-import ConnectButton from "./ConnectButton";
 import { useDispatch } from "react-redux";
 import { ethers, providers } from "ethers";
 import { useWeb3ModalProvider } from "@web3modal/ethers5/react";
@@ -76,53 +75,14 @@ const DecoElements = React.memo(() => (
   </>
 ));
 
-// Mobil Menü Komponenti
-const MobileMenu: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
-}> = ({ isOpen, onClose }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: "100%" }}
-      animate={{ opacity: isOpen ? 1 : 0, x: isOpen ? 0 : "100%" }}
-      transition={{ type: "spring", damping: 25 }}
-      className={`fixed inset-y-0 right-0 w-64 bg-[#0c0c0c]/95 backdrop-blur-lg border-l border-[#a8c7fa]/10 z-50
-                 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
-    >
-      <div className="p-6 space-y-6">
-        <div className="flex justify-end">
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-[#a8c7fa]/10 rounded-lg transition-colors"
-          >
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <nav className="space-y-4">
-          <a href="#" className="block px-4 py-2 text-[#a8c7fa]/60 hover:text-[#a8c7fa] hover:bg-[#a8c7fa]/5 rounded-lg transition-colors">
-            Explore
-          </a>
-          <a href="#" className="block px-4 py-2 text-[#a8c7fa]/60 hover:text-[#a8c7fa] hover:bg-[#a8c7fa]/5 rounded-lg transition-colors">
-            Marketplace
-          </a>
-          <a href="#" className="block px-4 py-2 text-[#a8c7fa]/60 hover:text-[#a8c7fa] hover:bg-[#a8c7fa]/5 rounded-lg transition-colors">
-            Documentation
-          </a>
-        </nav>
-      </div>
-    </motion.div>
-  );
-};
+
 
 // Bottom Sheet komponenti
 const BottomSheet: React.FC<{
   selectedNFT: NFT | null;
   isOpen: boolean;
   onClose: () => void;
-}> = ({ selectedNFT, isOpen, onClose }) => {
+}> = ({ selectedNFT, isOpen }) => {
   return (
     <motion.div 
       initial={{ y: "100%" }}
@@ -210,76 +170,12 @@ const BottomSheet: React.FC<{
   );
 };
 
-// NFT Tab komponenti
-const NFTTabs: React.FC<{
-  activeTab: 'all' | 'my';
-  onTabChange: (tab: 'all' | 'my') => void;
-}> = ({ activeTab, onTabChange }) => {
-  return (
-    <div className="inline-flex items-center space-x-1 bg-[#0c0c0c]/50 p-1 rounded-lg border border-[#a8c7fa]/10">
-      {[
-        { id: 'all', title: 'All NFTs' },
-        { id: 'my', title: 'My NFTs' }
-      ].map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onTabChange(tab.id as 'all' | 'my')}
-          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-300
-            ${activeTab === tab.id 
-              ? 'bg-[#7042f8]/20 text-white shadow-sm border border-[#7042f8]/30' 
-              : 'text-[#a8c7fa]/60 hover:text-[#a8c7fa] hover:bg-white/5'
-            }`}
-        >
-          {tab.title}
-        </button>
-      ))}
-    </div>
-  );
-};
 
-// View Switch komponenti
-const ViewSwitch: React.FC<{
-  view: 'list' | 'grid';
-  onViewChange: (view: 'list' | 'grid') => void;
-}> = ({ view, onViewChange }) => {
-  return (
-    <div className="flex items-center gap-2 ml-4">
-      <button
-        onClick={() => onViewChange('list')}
-        className={`p-1.5 rounded-lg transition-all duration-300 ${
-          view === 'list'
-            ? 'bg-[#7042f8]/20 text-white'
-            : 'text-[#a8c7fa]/40 hover:text-[#a8c7fa]/60'
-        }`}
-      >
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-      <button
-        onClick={() => onViewChange('grid')}
-        className={`p-1.5 rounded-lg transition-all duration-300 ${
-          view === 'grid'
-            ? 'bg-[#7042f8]/20 text-white'
-            : 'text-[#a8c7fa]/40 hover:text-[#a8c7fa]/60'
-        }`}
-      >
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-            d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" 
-          />
-        </svg>
-      </button>
-    </div>
-  );
-};
 
 const Layout: React.FC = () => {
   const { walletProvider } = useWeb3ModalProvider();
   const [walletAddress, setWalletAddress] = useState<string>("");
-  const [isCopied, setIsCopied] = useState(false);
   const dispatch = useDispatch();
-  
   // NFT States
   const [selectedNFT, setSelectedNFT] = useState<NFT | null>(null);
   const [nftCollection, setNftCollection] = useState<NFT[]>([]);
@@ -445,11 +341,6 @@ const Layout: React.FC = () => {
                 onViewChange={setView}
                 onTabChange={(tab) => {
                   setActiveTab(tab);
-                  if (tab === 'my') {
-                    setDisplayedNFTs(myNFTs);
-                  } else {
-                    setDisplayedNFTs(nftCollection);
-                  }
                 }}
               />
             </div>
