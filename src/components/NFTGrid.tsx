@@ -22,13 +22,14 @@ interface NFTCardProps {
   nft: NFT;
   onSelect: (nft: NFT) => void;
   isSelected: boolean;
+  view: 'list' | 'grid';
 }
 
 const ROTATION_RANGE = 32;
 const HALF_ROTATION_RANGE = ROTATION_RANGE / 2;
 const PERSPECTIVE = "1200px";
 
-const NFTCard = ({ nft, onSelect, isSelected }: NFTCardProps) => {
+const NFTCard = ({ nft, onSelect, isSelected, view }: NFTCardProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -95,11 +96,11 @@ const NFTCard = ({ nft, onSelect, isSelected }: NFTCardProps) => {
           hover:from-[#a8c7fa]/30 hover:to-[#a8c7fa]/20
           group-hover:shadow-lg group-hover:shadow-[#a8c7fa]/10`}
       >
-        <div className="flex items-center gap-8 p-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8 p-4 md:p-8">
           {/* Left Side - Mission Info */}
-          <div className="flex items-center gap-8">
-            {/* NFT Image with Sheen Effect */}
-            <div className={`relative w-40 h-40 rounded-xl overflow-hidden transition-transform duration-500
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8 w-full">
+            {/* NFT Image */}
+            <div className={`relative w-full md:w-40 aspect-square md:h-40 rounded-xl overflow-hidden transition-transform duration-500
               ${isSelected ? 'shadow-lg shadow-[#7042f8]/20 scale-105' : 'shadow-lg shadow-black/50'}
               border ${isSelected ? 'border-[#7042f8]/30' : 'border-[#a8c7fa]/30'}`}
             >
@@ -137,8 +138,8 @@ const NFTCard = ({ nft, onSelect, isSelected }: NFTCardProps) => {
               </div>
             </div>
 
-            {/* Mission Info */}
-            <div className="space-y-4">
+            {/* Info Content */}
+            <div className="space-y-4 w-full md:w-auto">
               <div>
                 <div className="text-sm text-[#a8c7fa]/60 uppercase tracking-wider mb-1">Mission Name</div>
                 <div className="text-xl font-medium text-white/90 tracking-wide">{nft.name}</div>
@@ -175,8 +176,8 @@ const NFTCard = ({ nft, onSelect, isSelected }: NFTCardProps) => {
             </div>
           </div>
 
-          {/* Right Side - Status */}
-          <div className="flex flex-col items-center gap-3 ml-auto">
+          {/* Right Side Status - Desktop Only */}
+          <div className="hidden md:flex flex-col items-center gap-3 ml-auto">
             <div className="text-lg font-medium text-[#a8c7fa]/80">Mission Status</div>
             {nft.status === 'completed' ? (
               <div className="w-16 h-16 text-green-400 animate-pulse">
@@ -198,6 +199,35 @@ const NFTCard = ({ nft, onSelect, isSelected }: NFTCardProps) => {
               }
             </div>
           </div>
+
+          {/* Mobile Status Indicator */}
+          <div className="flex md:hidden items-center gap-2 w-full justify-between mt-4 pt-4 border-t border-[#a8c7fa]/10">
+            <span className="text-sm text-[#a8c7fa]/60">
+              {nft.status === 'completed' ? 'Completed' : 'In Progress'}
+            </span>
+            <div className={`px-2 py-1 rounded-full text-xs font-medium 
+              ${nft.status === 'completed' 
+                ? 'bg-green-500/20 text-green-400' 
+                : 'bg-orange-500/20 text-orange-400'
+              }`}>
+              {nft.status === 'completed' ? '100%' : 'Pending'}
+            </div>
+          </div>
+
+          {/* View Details Button */}
+          <Link 
+            to={`/nft/${nft.id}`}
+            className="absolute top-4 right-4 p-2 bg-[#a8c7fa]/10 hover:bg-[#a8c7fa]/20 
+                     border border-[#a8c7fa]/20 rounded-lg transition-all duration-300
+                     text-[#a8c7fa]/60 hover:text-white"
+            onClick={(e) => e.stopPropagation()} // Kart seçimini engellemek için
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" 
+              />
+            </svg>
+          </Link>
         </div>
 
         {/* Enhanced Sheen overlay for selected state */}
@@ -219,16 +249,18 @@ interface NFTGridProps {
   isLoading: boolean;
   onSelect: (nft: NFT) => void;
   selectedNFTId?: number;
+  view: 'list' | 'grid';
 }
 
-const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, selectedNFTId }) => {
+const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, selectedNFTId, view }) => {
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className={view === 'grid' ? "grid grid-cols-2 gap-4" : "space-y-4"}>
         {[...Array(3)].map((_, i) => (
           <div 
             key={i}
-            className="h-32 bg-gradient-to-r from-[#a8c7fa]/20 to-[#a8c7fa]/10 rounded-lg animate-pulse"
+            className={`bg-gradient-to-r from-[#a8c7fa]/20 to-[#a8c7fa]/10 rounded-lg animate-pulse
+              ${view === 'grid' ? 'aspect-square' : 'h-32'}`}
           />
         ))}
       </div>
@@ -236,13 +268,18 @@ const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, selectedNF
   }
 
   return (
-    <div className="space-y-4 max-w-4xl mx-auto">
+    <div className={
+      view === 'grid' 
+        ? "grid grid-cols-2 md:grid-cols-3 gap-4" 
+        : "space-y-4"
+    }>
       {nfts.map((nft) => (
         <div key={nft.id} className="block">
           <NFTCard 
             nft={nft} 
             onSelect={onSelect}
             isSelected={nft.id === selectedNFTId}
+            view={view}
           />
         </div>
       ))}
