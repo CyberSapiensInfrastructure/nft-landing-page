@@ -20,7 +20,7 @@ const BackgroundCompiler = React.lazy(
   () => import("../components/BackgroundCompiler")
 );
 
-const DecoElements = React.memo(() => (
+export const DecoElements = React.memo(() => (
   <>
     {/* Noise overlay */}
     <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.015] mix-blend-soft-light">
