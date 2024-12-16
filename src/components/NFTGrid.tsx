@@ -18,31 +18,29 @@ export interface NFT {
   missionAmount: number;
 }
 
-interface NFTGridProps {
-  nfts: NFT[];
-  isLoading: boolean;
+interface NFTCardProps {
+  nft: NFT;
   onSelect: (nft: NFT) => void;
+  isSelected: boolean;
 }
 
 const ROTATION_RANGE = 32;
 const HALF_ROTATION_RANGE = ROTATION_RANGE / 2;
 const PERSPECTIVE = "1200px";
 
-const NFTCard = ({ nft }: { nft: NFT }) => {
+const NFTCard = ({ nft, onSelect, isSelected }: NFTCardProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  const xSpring = useSpring(x, {
-    stiffness: 300,
-    damping: 30,
+  const springConfig = {
+    stiffness: isSelected ? 400 : 300,
+    damping: isSelected ? 25 : 30,
     mass: 1
-  });
-  const ySpring = useSpring(y, {
-    stiffness: 300,
-    damping: 30,
-    mass: 1
-  });
+  };
+
+  const xSpring = useSpring(x, springConfig);
+  const ySpring = useSpring(y, springConfig);
 
   const transform = useMotionTemplate`rotateX(${xSpring}deg) rotateY(${ySpring}deg)`;
   const sheenOpacity = useTransform(
@@ -74,7 +72,13 @@ const NFTCard = ({ nft }: { nft: NFT }) => {
   };
 
   return (
-    <div style={{ perspective: PERSPECTIVE }} className="group">
+    <div 
+      style={{ perspective: PERSPECTIVE }} 
+      className={`group cursor-pointer transition-all duration-300 ${
+        isSelected ? 'scale-[1.02] -rotate-1' : ''
+      }`}
+      onClick={() => onSelect(nft)}
+    >
       <motion.div
         ref={ref}
         onMouseMove={handleMouseMove}
@@ -83,24 +87,46 @@ const NFTCard = ({ nft }: { nft: NFT }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative bg-gradient-to-r from-[#a8c7fa]/20 to-[#a8c7fa]/10 rounded-xl overflow-hidden 
-                   hover:from-[#a8c7fa]/30 hover:to-[#a8c7fa]/20 transition-all duration-300
-                   group-hover:shadow-lg group-hover:shadow-[#a8c7fa]/10"
+        className={`relative bg-gradient-to-r overflow-hidden rounded-xl transition-all duration-300
+          ${isSelected 
+            ? 'from-[#7042f8]/30 to-[#7042f8]/20 shadow-lg shadow-[#7042f8]/20 border-2 border-[#7042f8]/30' 
+            : 'from-[#a8c7fa]/20 to-[#a8c7fa]/10 border border-[#a8c7fa]/20'
+          }
+          hover:from-[#a8c7fa]/30 hover:to-[#a8c7fa]/20
+          group-hover:shadow-lg group-hover:shadow-[#a8c7fa]/10`}
       >
         <div className="flex items-center gap-8 p-8">
           {/* Left Side - Mission Info */}
           <div className="flex items-center gap-8">
             {/* NFT Image with Sheen Effect */}
-            <div className="relative w-40 h-40 rounded-xl overflow-hidden border border-[#a8c7fa]/30 shadow-lg shadow-black/50">
+            <div className={`relative w-40 h-40 rounded-xl overflow-hidden transition-transform duration-500
+              ${isSelected ? 'shadow-lg shadow-[#7042f8]/20 scale-105' : 'shadow-lg shadow-black/50'}
+              border ${isSelected ? 'border-[#7042f8]/30' : 'border-[#a8c7fa]/30'}`}
+            >
               <img 
                 src={nft.image} 
                 alt={nft.name}
-                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                className={`w-full h-full object-cover transition-all duration-500
+                  ${isSelected ? 'scale-110' : 'group-hover:scale-110'}`}
               />
               <motion.div
                 style={{ opacity: sheenOpacity }}
                 className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/0 to-white/20"
               />
+              
+              {/* Selection Indicator */}
+              {isSelected && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="absolute top-3 left-3 w-6 h-6 bg-[#7042f8] rounded-full flex items-center justify-center"
+                >
+                  <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </motion.div>
+              )}
+
               {/* Status Badge */}
               <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium 
                 ${nft.status === 'completed' 
@@ -172,67 +198,30 @@ const NFTCard = ({ nft }: { nft: NFT }) => {
               }
             </div>
           </div>
-
-          {/* Action Buttons - Mission Info'dan sonra ekleyin */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-            <div className="flex items-center gap-3 justify-end">
-              {/* Mint Button - Eğer mint edilebilir durumdaysa */}
-              {!nft.status && (
-                <button 
-                  className="px-4 py-2 bg-[#d8624b]/20 hover:bg-[#d8624b]/40 border border-[#d8624b]/30 
-                           rounded-lg text-sm text-white/90 transition-all duration-300 flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Mint Now
-                </button>
-              )}
-
-              {/* Transfer Button - Eğer NFT mint edilmişse */}
-              {nft.status === 'completed' && (
-                <button 
-                  className="px-4 py-2 bg-[#7042f8]/20 hover:bg-[#7042f8]/40 border border-[#7042f8]/30 
-                           rounded-lg text-sm text-white/90 transition-all duration-300 flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
-                  Transfer
-                </button>
-              )}
-
-              {/* View Details Button */}
-              <Link 
-                to={`/nft/${nft.id}`}
-                className="px-4 py-2 bg-[#a8c7fa]/20 hover:bg-[#a8c7fa]/40 border border-[#a8c7fa]/30 
-                         rounded-lg text-sm text-white/90 transition-all duration-300 flex items-center gap-2"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = `/nft/${nft.id}`;
-                }}
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                View Details
-              </Link>
-            </div>
-          </div>
         </div>
 
-        {/* Sheen overlay */}
+        {/* Enhanced Sheen overlay for selected state */}
         <motion.div
           style={{ opacity: sheenOpacity }}
-          className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/10 pointer-events-none"
+          className={`absolute inset-0 bg-gradient-to-br pointer-events-none
+            ${isSelected 
+              ? 'from-white/15 via-transparent to-white/15' 
+              : 'from-white/10 via-transparent to-white/10'
+            }`}
         />
       </motion.div>
     </div>
   );
 };
 
-const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect }) => {
+interface NFTGridProps {
+  nfts: NFT[];
+  isLoading: boolean;
+  onSelect: (nft: NFT) => void;
+  selectedNFTId?: number;
+}
+
+const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, selectedNFTId }) => {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -249,13 +238,13 @@ const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect }) => {
   return (
     <div className="space-y-4 max-w-4xl mx-auto">
       {nfts.map((nft) => (
-        <Link 
-          to={`/nft/${nft.id}`} 
-          key={nft.id}
-          className="block"
-        >
-          <NFTCard nft={nft} />
-        </Link>
+        <div key={nft.id} className="block">
+          <NFTCard 
+            nft={nft} 
+            onSelect={onSelect}
+            isSelected={nft.id === selectedNFTId}
+          />
+        </div>
       ))}
     </div>
   );
