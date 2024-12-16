@@ -25,6 +25,7 @@ export const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, sel
   const [filterSelected, setFilterSelected] = useState(1);
   const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const filters = [
     { id: 1, title: "All NFTs", icon: (
@@ -76,8 +77,8 @@ export const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, sel
 
   return (
     <div className="w-full h-full flex">
-      {/* Fixed Vertical Filters */}
-      <div className={`${isMenuCollapsed ? 'w-[60px]' : 'w-[200px]'} h-full fixed left-0 top-[4rem] bg-[#0c0c0c]/95 backdrop-blur-md border-r border-[#a8c7fa]/10 flex flex-col transition-all duration-300`}>
+      {/* Desktop Sidebar - lg breakpoint'te görünür */}
+      <div className={`hidden lg:flex ${isMenuCollapsed ? 'w-[60px]' : 'w-[200px]'} h-full fixed left-0 top-[4.5rem] bg-[#0c0c0c]/95 backdrop-blur-md border-r border-[#a8c7fa]/10 flex-col transition-all duration-300`}>
         {/* Collapse Button */}
         <button
           onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
@@ -87,62 +88,6 @@ export const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, sel
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-
-        <div className={`p-4 border-b border-[#a8c7fa]/10 ${isMenuCollapsed ? 'items-center' : ''}`}>
-          {!isMenuCollapsed && (
-            <>
-              {/* All/My NFTs Toggle */}
-              <div className="bg-[#0c0c0c]/50 p-1 rounded-lg border border-[#a8c7fa]/10 mb-3">
-                <div className="grid grid-cols-2 gap-1">
-                  <button
-                    onClick={() => handleTabChange('all')}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                      activeTab === 'all'
-                        ? "bg-[#7042f88b] text-white"
-                        : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-                    }`}
-                  >
-                    All NFTs
-                  </button>
-                  <button
-                    onClick={() => handleTabChange('my')}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                      activeTab === 'my'
-                        ? "bg-[#7042f88b] text-white"
-                        : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-                    }`}
-                  >
-                    My NFTs
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Grid/List View Toggle */}
-          <div className={`flex gap-2 p-1 bg-[#0c0c0c]/50 rounded-lg border border-[#a8c7fa]/10 ${isMenuCollapsed ? 'flex-col' : ''}`}>
-            <button
-              onClick={() => onViewChange('grid')}
-              className={`flex-1 flex items-center justify-center p-2 rounded-lg transition-all ${
-                view === 'grid'
-                  ? "bg-[#7042f88b] text-white"
-                  : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-              }`}
-            >
-              <ViewGridIcon />
-            </button>
-            <button
-              onClick={() => onViewChange('list')}
-              className={`flex-1 flex items-center justify-center p-2 rounded-lg transition-all ${
-                view === 'list'
-                  ? "bg-[#7042f88b] text-white"
-                  : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-              }`}
-            >
-              <ViewListIcon />
-            </button>
-          </div>
-        </div>
 
         {/* Filters */}
         <div className="flex-1 p-4 space-y-2">
@@ -164,10 +109,158 @@ export const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, sel
         </div>
       </div>
 
-      {/* Scrollable Content with Dynamic Left Margin */}
-      <div className={`flex-1 ${isMenuCollapsed ? 'ml-[60px]' : 'ml-[200px]'} overflow-y-auto scrollbar-thin scrollbar-thumb-[#a8c7fa]/10 scrollbar-track-transparent transition-all duration-300`}>
+      {/* Mobile Filter Bar - lg breakpoint'te gizli */}
+      <div className="lg:hidden sticky top-0 z-20 w-full bg-[#0c0c0c]/95 backdrop-blur-md border-b border-[#a8c7fa]/10">
+        <div className="flex items-center justify-between p-4">
+          {/* Filter Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="flex items-center gap-2 px-3 py-2 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <span className="text-sm">Filters</span>
+            </button>
+
+            {/* Mobile Filter Menu */}
+            {isMobileMenuOpen && (
+              <div className="absolute top-full left-0 mt-2 w-64 bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-xl shadow-xl">
+                {/* All/My NFTs Toggle */}
+                <div className="p-3 border-b border-[#a8c7fa]/10">
+                  <div className="grid grid-cols-2 gap-1 bg-[#0c0c0c]/50 p-1 rounded-lg">
+                    <button
+                      onClick={() => handleTabChange('all')}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                        activeTab === 'all'
+                          ? "bg-[#7042f88b] text-white"
+                          : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+                      }`}
+                    >
+                      All NFTs
+                    </button>
+                    <button
+                      onClick={() => handleTabChange('my')}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                        activeTab === 'my'
+                          ? "bg-[#7042f88b] text-white"
+                          : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+                      }`}
+                    >
+                      My NFTs
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter Options */}
+                <div className="p-2">
+                  {filters.map((filter) => (
+                    <button
+                      key={filter.id}
+                      onClick={() => {
+                        setFilterSelected(filter.id);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
+                        ${filterSelected === filter.id
+                          ? "bg-[#7042f88b] text-white"
+                          : "text-[#a8c7fa]/60 hover:text-[#a8c7fa] hover:bg-[#a8c7fa]/10"
+                        }`}
+                    >
+                      {filter.icon}
+                      <span>{filter.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex gap-2 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
+            <button
+              onClick={() => onViewChange('grid')}
+              className={`flex items-center justify-center p-2 rounded-lg transition-all ${
+                view === 'grid'
+                  ? "bg-[#7042f88b] text-white"
+                  : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+              }`}
+            >
+              <ViewGridIcon />
+            </button>
+            <button
+              onClick={() => onViewChange('list')}
+              className={`flex items-center justify-center p-2 rounded-lg transition-all ${
+                view === 'list'
+                  ? "bg-[#7042f88b] text-white"
+                  : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+              }`}
+            >
+              <ViewListIcon />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className={`flex-1 ${isMenuCollapsed ? 'lg:ml-[60px]' : 'lg:ml-[200px]'} overflow-y-auto scrollbar-thin scrollbar-thumb-[#a8c7fa]/10 scrollbar-track-transparent transition-all duration-300`}>
+        {/* Header Controls */}
+        <div className="sticky top-0 z-10 bg-[#0c0c0c]/80 backdrop-blur-md border-b border-[#a8c7fa]/10">
+          <div className="flex items-center justify-between p-4">
+            {/* All/My NFTs Toggle */}
+            <div className="flex gap-2 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
+              <button
+                onClick={() => handleTabChange('all')}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === 'all'
+                    ? "bg-[#7042f88b] text-white"
+                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+                }`}
+              >
+                All NFTs
+              </button>
+              <button
+                onClick={() => handleTabChange('my')}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === 'my'
+                    ? "bg-[#7042f88b] text-white"
+                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+                }`}
+              >
+                My NFTs
+              </button>
+            </div>
+
+            {/* View Toggle */}
+            <div className="flex gap-2 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
+              <button
+                onClick={() => onViewChange('grid')}
+                className={`flex items-center justify-center p-2 rounded-lg transition-all ${
+                  view === 'grid'
+                    ? "bg-[#7042f88b] text-white"
+                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+                }`}
+              >
+                <ViewGridIcon />
+              </button>
+              <button
+                onClick={() => onViewChange('list')}
+                className={`flex items-center justify-center p-2 rounded-lg transition-all ${
+                  view === 'list'
+                    ? "bg-[#7042f88b] text-white"
+                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+                }`}
+              >
+                <ViewListIcon />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Grid/List Content */}
         {view === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
             {nfts.map((nft) => (
               <div 
                 key={nft.id}
@@ -209,25 +302,24 @@ export const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, sel
             ))}
           </div>
         ) : (
-          <div className="space-y-2 p-4">
+          <div className="space-y-1 p-4">
             {nfts.map((nft) => (
               <div 
                 key={nft.id}
                 onClick={() => onSelect(nft)}
-                className={`flex items-center gap-4 bg-[#0c0c0c]/50 backdrop-blur-md border border-[#a8c7fa]/10 
-                  p-3 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer
-                  ${selectedNFTId === nft.id ? 'ring-2 ring-[#7042f88b]' : ''}`}
-                style={{ zIndex: 10 }}
+                className={`flex items-center gap-3 border border-[#a8c7fa]/10 
+                  p-2.5 rounded-xl hover:bg-[#a8c7fa]/5 transition-all duration-300 cursor-pointer
+                  ${selectedNFTId === nft.id ? 'ring-2 ring-[#7042f88b] bg-[#7042f88b]/5' : ''}`}
               >
                 <img 
                   src={nft.image} 
                   alt={nft.name}
-                  className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                  className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
                 />
                 <div className="flex-1 flex justify-between items-center min-w-0">
-                  <div className="space-y-1 min-w-0 flex-1">
+                  <div className="space-y-0.5 min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-base font-medium text-white truncate">{nft.name}</h3>
+                      <h3 className="text-sm font-medium text-white truncate">{nft.name}</h3>
                       <div className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap
                         ${nft.status === 'completed' 
                           ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
@@ -248,7 +340,7 @@ export const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, sel
                     </div>
                   </div>
                   
-                  <div className="flex items-center ml-4">
+                  <div className="flex items-center ml-3">
                     <svg className="w-4 h-4 text-[#a8c7fa]/40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
@@ -259,6 +351,14 @@ export const NFTGrid: React.FC<NFTGridProps> = ({ nfts, isLoading, onSelect, sel
           </div>
         )}
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-10"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
     </div>
   );
 }; 

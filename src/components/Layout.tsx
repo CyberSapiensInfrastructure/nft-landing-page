@@ -15,6 +15,7 @@ import { NFTGrid , NFT} from "./NFTGrid";
 import nftImage from '../assets/img/nft.jpg';
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import Header from './Header';
 
 const BackgroundCompiler = React.lazy(
   () => import("../components/BackgroundCompiler")
@@ -113,95 +114,6 @@ const MobileMenu: React.FC<{
         </nav>
       </div>
     </motion.div>
-  );
-};
-
-// Header komponenti güncelleniyor
-const Header: React.FC = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  return (
-    <>
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between bg-[#0c0c0c]/50 backdrop-blur-md border border-[#a8c7fa]/10 rounded-xl p-3">
-            {/* Logo & Brand */}
-            <div className="flex items-center gap-6">
-              <a
-                href="https://playprovidence.io"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 hover:text-[#7042f88b] transition-all duration-300 group"
-              >
-                {/* Logo Square */}
-                <div className="relative w-10 h-10 bg-gradient-to-br from-[#7042f88b]/20 to-[#7042f88b]/5 
-                              rounded-xl border border-[#7042f88b]/20 group-hover:border-[#7042f88b]/40 
-                              transition-all duration-300 overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-[#d8624b] rounded-full group-hover:scale-150 transition-all duration-500" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 
-                                group-hover:opacity-100 transition-all duration-300" />
-                </div>
-
-                {/* Brand Name */}
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium tracking-[0.2em]">PROVIDENCE</span>
-                  <span className="text-xs text-[#a8c7fa]/60">F8 Collection</span>
-                </div>
-              </a>
-
-              {/* Navigation Links */}
-              <nav className="hidden md:flex items-center gap-6 text-sm text-[#a8c7fa]/60">
-                <a href="#" className="hover:text-[#a8c7fa] transition-colors duration-300">Explore</a>
-                <a href="#" className="hover:text-[#a8c7fa] transition-colors duration-300">Marketplace</a>
-                <a href="#" className="hover:text-[#a8c7fa] transition-colors duration-300">Documentation</a>
-              </nav>
-            </div>
-
-            {/* Right Side Actions */}
-            <div className="flex items-center gap-4">
-              {/* Network Indicator */}
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-[#a8c7fa]/5 
-                            rounded-lg border border-[#a8c7fa]/10">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-xs text-[#a8c7fa]/60">Ethereum Network</span>
-              </div>
-
-              {/* Connect Button */}
-              <ConnectButton />
-
-              {/* Mobile Menu Button güncelleniyor */}
-              <button 
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="md:hidden p-2 hover:bg-[#a8c7fa]/10 rounded-lg transition-colors duration-300"
-              >
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobil Menü */}
-      <MobileMenu 
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
-
-      {/* Overlay */}
-      {isMobileMenuOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setIsMobileMenuOpen(false)}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-        />
-      )}
-    </>
   );
 };
 
@@ -507,7 +419,7 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white flex flex-col font-orbitron text-[110%] relative">
+    <div className="w-full min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white flex flex-col font-orbitron relative">
       {/* Background Elements */}
       <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.05] mix-blend-soft-light">
         <div className="absolute inset-0 bg-noise animate-noise" />
@@ -519,11 +431,11 @@ const Layout: React.FC = () => {
       <Header />
 
       {/* Main Content */}
-      <div className="flex-1 relative mt-12">
-        <div className="flex h-[calc(100vh-3.5rem)]">
+      <div className="flex-1 pt-16">
+        <div className="container mx-auto flex flex-col lg:flex-row h-[calc(100vh-4rem-2rem)]">
           {/* Sol Kolon - NFT Listesi */}
-          <div className="flex-1 h-full">
-            <div className="h-full relative">
+          <div className="flex-1 h-full px-4 py-6">
+            <div className="h-full">
               <NFTGrid 
                 nfts={displayedNFTs}
                 isLoading={isLoading} 
@@ -545,7 +457,7 @@ const Layout: React.FC = () => {
 
           {/* Sağ Kolon - NFT Detayları (Desktop) */}
           {selectedNFT && (
-            <div className="w-[400px] border-l border-[#a8c7fa]/10 h-full">
+            <div className="hidden lg:block w-[400px] border-l border-[#a8c7fa]/10">
               <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-[#a8c7fa]/10 scrollbar-track-transparent">
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
@@ -633,15 +545,21 @@ const Layout: React.FC = () => {
       </div>
 
       {/* Bottom Sheet (Mobile) */}
-      <BottomSheet 
-        selectedNFT={selectedNFT}
-        isOpen={isBottomSheetOpen}
-        onClose={() => setIsBottomSheetOpen(false)}
-      />
-
-      <div className="mt-4">
-        <Footer />
+      <div className="lg:hidden">
+        <BottomSheet 
+          selectedNFT={selectedNFT}
+          isOpen={isBottomSheetOpen}
+          onClose={() => setIsBottomSheetOpen(false)}
+        />
       </div>
+
+      {/* Footer */}
+      <div className="mt-auto border-t border-[#a8c7fa]/10">
+        <div className="container mx-auto px-4 py-4">
+          <Footer />
+        </div>
+      </div>
+
       <StackedNotifications />
     </div>
   );
