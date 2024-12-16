@@ -11,8 +11,7 @@ import {
 import StackedNotifications from "./Notification";
 import ShuffleLoader from "./Loader";
 import Footer from "./Footer";
-import NFTGrid from "./NFTGrid";
-import { NFT } from './NFTGrid';
+import { NFTGrid , NFT} from "./NFTGrid";
 import nftImage from '../assets/img/nft.jpg';
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -124,8 +123,8 @@ const Header: React.FC = () => {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="max-w-7xl mx-auto px-8 py-6">
-          <div className="flex items-center justify-between bg-[#0c0c0c]/50 backdrop-blur-md border border-[#a8c7fa]/10 rounded-2xl p-4">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between bg-[#0c0c0c]/50 backdrop-blur-md border border-[#a8c7fa]/10 rounded-xl p-3">
             {/* Logo & Brand */}
             <div className="flex items-center gap-6">
               <a
@@ -184,10 +183,6 @@ const Header: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Decorative Elements */}
-        <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-[#a8c7fa]/20 to-transparent" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black to-transparent pointer-events-none" />
       </header>
 
       {/* Mobil Menü */}
@@ -346,9 +341,7 @@ const ViewSwitch: React.FC<{
         }`}
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-            d="M4 6h16M4 12h16M4 18h16" 
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
       <button
@@ -460,7 +453,16 @@ const Layout: React.FC = () => {
             price: 0,
             status: 'not_completed',
             expireDate: "31.12.2024 - 23:59:59",
-            missionAmount: 0
+            missionAmount: 2
+          },
+          {
+            id: 4,
+            name: "GENESIS",
+            image: nftImage,
+            price: 0,
+            status: 'completed',
+            expireDate: "31.12.2024 - 23:59:59",
+            missionAmount: 3
           }
         ] as NFT[];
         setNftCollection(mockNFTs);
@@ -517,43 +519,42 @@ const Layout: React.FC = () => {
       <Header />
 
       {/* Main Content */}
-      <div className="flex-1 relative mt-24 mb-auto">
-        <div className="flex flex-col lg:flex-row min-h-[calc(100vh-12rem)]">
+      <div className="flex-1 relative mt-16">
+        <div className="flex h-[calc(100vh-4rem)]">
           {/* Sol Kolon - NFT Listesi */}
-          <div className="w-full lg:w-2/3">
-            <div className="h-full flex flex-col">
-              {/* Tabs */}
-              <div className="p-4 md:p-8 pb-4">
-                <NFTTabs 
-                  activeTab={activeTab} 
-                  onTabChange={setActiveTab} 
-                />
-              </div>
-              
-              {/* Liste - Scrollable */}
-              <div className="flex-1 overflow-y-auto px-4 md:px-8 scrollbar-thin scrollbar-thumb-[#a8c7fa]/20 scrollbar-track-transparent">
-                <NFTGrid
-                  nfts={displayedNFTs} 
-                  isLoading={isLoading} 
-                  onSelect={handleNFTSelect}
-                  selectedNFTId={selectedNFT?.id}
-                />
-              </div>
+          <div className="flex-1 h-full">
+            <div className="h-full relative">
+              <NFTGrid 
+                nfts={displayedNFTs}
+                isLoading={isLoading} 
+                onSelect={handleNFTSelect}
+                selectedNFTId={selectedNFT?.id}
+                view={view}
+                onViewChange={setView}
+                onTabChange={(tab) => {
+                  setActiveTab(tab);
+                  if (tab === 'my') {
+                    setDisplayedNFTs(myNFTs);
+                  } else {
+                    setDisplayedNFTs(nftCollection);
+                  }
+                }}
+              />
             </div>
           </div>
 
           {/* Sağ Kolon - NFT Detayları (Desktop) */}
-          <div className="hidden lg:block w-1/3 border-l border-[#a8c7fa]/10">
-            <div className="p-8 h-full overflow-y-auto">
-              {selectedNFT ? (
+          {selectedNFT && (
+            <div className="w-[400px] border-l border-[#a8c7fa]/10 h-full">
+              <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-[#a8c7fa]/10 scrollbar-track-transparent">
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-8"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="p-6 flex flex-col min-h-full"
                 >
                   {/* NFT Header */}
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-medium">NFT Details</h2>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-medium">NFT Details</h2>
                     <div className={`px-2 py-1 rounded-full text-xs font-medium 
                       ${selectedNFT.status === 'completed' 
                         ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
@@ -563,108 +564,71 @@ const Layout: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* NFT Image */}
-                  <div className="relative aspect-square rounded-xl overflow-hidden border border-[#a8c7fa]/20 group">
-                    <img 
-                      src={selectedNFT.image} 
-                      alt={selectedNFT.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  {/* NFT Content */}
+                  <div className="flex-grow flex flex-col">
+                    {/* Image Container */}
+                    <div className="relative aspect-square mb-6">
+                      <img 
+                        src={selectedNFT.image} 
+                        alt={selectedNFT.name}
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                    </div>
+
+                    {/* Info Container */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-white">{selectedNFT.name}</h3>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-[#a8c7fa]/5 p-3 rounded-xl">
+                          <span className="text-[#a8c7fa]/60 text-sm">Mission Amount</span>
+                          <p className="text-white font-medium mt-1">{selectedNFT.missionAmount}</p>
+                        </div>
+                        <div className="bg-[#a8c7fa]/5 p-3 rounded-xl">
+                          <span className="text-[#a8c7fa]/60 text-sm">Expires</span>
+                          <p className="text-white font-medium mt-1">{selectedNFT.expireDate}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* NFT Info */}
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-xl font-medium mb-2">{selectedNFT.name}</h3>
-                      <p className="text-[#a8c7fa]/60 text-sm">
-                        This exclusive Providence NFT grants you access to special features and rewards.
-                      </p>
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
-                        <div className="text-sm text-[#a8c7fa]/60 mb-1">Mission Amount</div>
-                        <div className="text-xl text-white">{selectedNFT.missionAmount}</div>
-                      </div>
-                      <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
-                        <div className="text-sm text-[#a8c7fa]/60 mb-1">Expires In</div>
-                        <div className="text-xl text-white">{selectedNFT.expireDate}</div>
-                      </div>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div>
-                      <div className="flex justify-between text-sm text-[#a8c7fa]/60 mb-2">
-                        <span>Completion Progress</span>
-                        <span>{selectedNFT.status === 'completed' ? '100%' : '0%'}</span>
-                      </div>
-                      <div className="h-2 bg-[#a8c7fa]/10 rounded-full overflow-hidden">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: selectedNFT.status === 'completed' ? '100%' : '0%' }}
-                          transition={{ duration: 0.5 }}
-                          className={`h-full rounded-full ${
-                            selectedNFT.status === 'completed'
-                              ? 'bg-gradient-to-r from-green-500 to-green-400'
-                              : 'bg-gradient-to-r from-orange-500 to-orange-400'
-                          }`}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="space-y-3 pt-4">
-                      {!selectedNFT.status && (
-                        <button className="w-full px-6 py-4 bg-[#d8624b]/20 hover:bg-[#d8624b]/40 border border-[#d8624b]/30 
-                                         rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2
-                                         hover:scale-[1.02]">
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                          </svg>
-                          Mint NFT
-                        </button>
-                      )}
-                      
-                      {selectedNFT.status === 'completed' && (
-                        <button className="w-full px-6 py-4 bg-[#7042f8]/20 hover:bg-[#7042f8]/40 border border-[#7042f8]/30 
-                                         rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2
-                                         hover:scale-[1.02]">
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                          </svg>
-                          Transfer NFT
-                        </button>
-                      )}
-
-                      <Link 
-                        to={`/nft/${selectedNFT.id}`}
-                        className="w-full px-6 py-4 bg-[#a8c7fa]/20 hover:bg-[#a8c7fa]/40 border border-[#a8c7fa]/30 
-                                 rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2
-                                 hover:scale-[1.02]"
-                      >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  {/* Action Buttons */}
+                  <div className="space-y-3 mt-6">
+                    {!selectedNFT.status && (
+                      <button className="w-full px-4 py-3 bg-[#d8624b]/20 hover:bg-[#d8624b]/40 border border-[#d8624b]/30 
+                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
-                        View Full Details
-                      </Link>
-                    </div>
+                        Mint NFT
+                      </button>
+                    )}
+                    
+                    {selectedNFT.status === 'completed' && (
+                      <button className="w-full px-4 py-3 bg-[#7042f8]/20 hover:bg-[#7042f8]/40 border border-[#7042f8]/30 
+                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        Transfer NFT
+                      </button>
+                    )}
+
+                    <Link 
+                      to={`/nft/${selectedNFT.id}`}
+                      className="w-full px-4 py-3 bg-[#a8c7fa]/20 hover:bg-[#a8c7fa]/40 border border-[#a8c7fa]/30 
+                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View Full Details
+                    </Link>
                   </div>
                 </motion.div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-center">
-                  <div className="space-y-4 text-[#a8c7fa]/40">
-                    <svg className="w-16 h-16 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                    </svg>
-                    <p className="text-lg">Select an NFT to view details</p>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
