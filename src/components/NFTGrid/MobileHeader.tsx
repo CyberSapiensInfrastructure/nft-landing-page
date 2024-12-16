@@ -14,7 +14,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ activeTab, view, han
       <div className="flex gap-1.5 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
         <button
           onClick={() => handleTabChange('all')}
-          className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+          className={`px-3 py-1 rounded-lg text-base font-medium transition-all ${
             activeTab === 'all' ? "bg-[#7042f88b] text-white" : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
           }`}
         >
@@ -22,7 +22,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ activeTab, view, han
         </button>
         <button
           onClick={() => handleTabChange('my')}
-          className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+          className={`px-3 py-1 rounded-lg text-base font-medium transition-all ${
             activeTab === 'my' ? "bg-[#7042f88b] text-white" : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
           }`}
         >

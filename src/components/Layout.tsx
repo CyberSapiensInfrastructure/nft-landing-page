@@ -103,7 +103,7 @@ const BottomSheet: React.FC<{
               {/* NFT Header */}
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-medium">NFT Details</h2>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium 
+                <div className={`px-2 py-1 rounded-full text-sm font-medium 
                   ${selectedNFT.status === 'completed' 
                     ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
                     : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
@@ -358,7 +358,7 @@ const Layout: React.FC = () => {
                   {/* NFT Header */}
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-medium">NFT Details</h2>
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium 
+                    <div className={`px-2 py-1 rounded-full text-sm font-medium 
                       ${selectedNFT.status === 'completed' 
                         ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
                         : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'

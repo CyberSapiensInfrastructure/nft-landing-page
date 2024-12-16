@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
@@ -44,6 +44,16 @@ export default {
           medium: "#d8624b40", // %40 opacity
           dark: "#d8624b80", // %80 opacity
         },
+      },
+      fontSize: {
+        'xs': '0.875rem',      // 14px (was 13px)
+        'sm': '1rem',          // 16px (was 15px)
+        'base': '1.125rem',    // 18px (was 17px)
+        'lg': '1.25rem',       // 20px (was 19px)
+        'xl': '1.375rem',      // 22px (was 21px)
+        '2xl': '1.75rem',      // 28px (was 26px)
+        '3xl': '2rem',         // 32px
+        '4xl': '2.25rem',      // 36px
       },
     },
   },
