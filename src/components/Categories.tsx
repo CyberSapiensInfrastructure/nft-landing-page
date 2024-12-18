@@ -31,76 +31,11 @@ const Categories: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center mb-12">
           <h2 className="text-3xl font-bold lowercase">browse categories</h2>
           
-          {/* Quick Filter Tabs */}
-          <div className="flex flex-wrap gap-3">
-            <button className="px-6 py-2.5 bg-[#7042f88b] text-white rounded-xl flex items-center gap-2 hover:bg-[#7042f8] transition-all duration-300">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-              </svg>
-              all nfts
-            </button>
-            <button className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#7042f88b]/20 text-[#a8c7fa]/60 hover:text-white rounded-xl flex items-center gap-2 transition-all duration-300 border border-[#a8c7fa]/10">
-              my nfts
-            </button>
-          </div>
+        
 
           {/* Filter Buttons */}
           <div className="flex flex-wrap items-center gap-4">
-            {/* Status Filter */}
-            <div className="relative group">
-              <button className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 text-white rounded-xl 
-                               flex items-center gap-2 border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 
-                               transition-all duration-300 min-w-[160px]">
-                <span className="text-[#a8c7fa]/60 text-sm">status:</span>
-                <span className="text-white">all</span>
-                <svg className="w-4 h-4 ml-auto text-[#a8c7fa]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <div className="absolute top-full left-0 mt-2 w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 
-                            rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 
-                            group-hover:visible transition-all duration-300 z-50">
-                <div className="py-1">
-                  {statusOptions.map((status) => (
-                    <button
-                      key={status}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-[#7042f88b]/20 transition-colors
-                               text-[#a8c7fa]/60 hover:text-white lowercase"
-                    >
-                      {status}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Sort Dropdown */}
-            <div className="relative group ml-auto">
-              <button className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 text-white rounded-xl 
-                               flex items-center gap-2 border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 
-                               transition-all duration-300 min-w-[160px]">
-                <span className="text-[#a8c7fa]/60 text-sm">sort by:</span>
-                <span className="text-white">newest</span>
-                <svg className="w-4 h-4 ml-auto text-[#a8c7fa]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <div className="absolute top-full right-0 mt-2 w-48 bg-[#0c0c0c] border border-[#a8c7fa]/10 
-                            rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 
-                            group-hover:visible transition-all duration-300 z-50">
-                <div className="py-1">
-                  {sortOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-[#7042f88b]/20 transition-colors
-                               text-[#a8c7fa]/60 hover:text-white lowercase"
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+         
 
             {/* View All Button */}
             <button 
