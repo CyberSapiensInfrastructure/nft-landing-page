@@ -160,95 +160,114 @@ const NFTListPage: React.FC = () => {
           </div>
 
           {/* Filters Row */}
-          <div className="flex flex-wrap items-center gap-4 p-6 bg-[#0c0c0c]/30 backdrop-blur-sm rounded-2xl border border-[#a8c7fa]/10">
-            {/* Status Filter */}
-            <div className="flex-1 min-w-[180px]">
+          <div className="flex flex-col space-y-6">
+            {/* Quick Filter Tabs */}
+            <div className="flex flex-wrap gap-3">
+              <button className="px-6 py-2.5 bg-[#7042f88b] text-white rounded-xl flex items-center gap-2 hover:bg-[#7042f8] transition-all duration-300">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                All NFTs
+              </button>
+              <button className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#7042f88b]/20 text-[#a8c7fa]/60 hover:text-white rounded-xl flex items-center gap-2 transition-all duration-300 border border-[#a8c7fa]/10">
+                My NFTs
+              </button>
+            </div>
+
+            {/* Filter Buttons */}
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Status Dropdown */}
               <div className="relative group">
-                <label className="inline-flex items-center gap-2 text-sm font-medium mb-2 text-[#a8c7fa] group-hover:text-[#7042f88b] transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <button 
+                  className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 text-white rounded-xl flex items-center gap-2 
+                             border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 transition-all duration-300 min-w-[160px]"
+                >
+                  <span className="text-[#a8c7fa]/60 text-sm">Status:</span>
+                  <span className="text-white ml-1">{filters.status === 'all' ? 'All' : filters.status}</span>
+                  <svg className="w-4 h-4 ml-auto text-[#a8c7fa]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                  Status
-                </label>
-                <div className="relative">
-                  <select
-                    value={filters.status}
-                    onChange={(e) => updateFilters({ status: e.target.value })}
-                    className="w-full appearance-none bg-[#0c0c0c]/80 border border-[#a8c7fa]/10 rounded-xl px-4 py-3 text-white/90
-                             focus:outline-none focus:border-[#7042f88b] focus:ring-1 focus:ring-[#7042f88b] hover:border-[#7042f88b]/50
-                             transition-all duration-300 cursor-pointer backdrop-blur-sm"
-                  >
-                    <option value="all" className="bg-[#0c0c0c]">All Status</option>
-                    <option value="completed" className="bg-[#0c0c0c]">Completed</option>
-                    <option value="not_completed" className="bg-[#0c0c0c]">Not Completed</option>
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#a8c7fa]/60 group-hover:text-[#7042f88b] transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                </button>
+                <div className="absolute top-full left-0 mt-2 w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-xl overflow-hidden opacity-0 
+                              invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                  <div className="py-1">
+                    {['all', 'completed', 'not_completed'].map((status) => (
+                      <button
+                        key={status}
+                        onClick={() => updateFilters({ status })}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-[#7042f88b]/20 transition-colors
+                                   ${filters.status === status ? 'text-white bg-[#7042f88b]/10' : 'text-[#a8c7fa]/60'}`}
+                      >
+                        {status === 'all' ? 'All Status' : status === 'completed' ? 'Completed' : 'Not Completed'}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Category Filter */}
-            <div className="flex-1 min-w-[180px]">
+              {/* Category Dropdown */}
               <div className="relative group">
-                <label className="inline-flex items-center gap-2 text-sm font-medium mb-2 text-[#a8c7fa] group-hover:text-[#7042f88b] transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                <button 
+                  className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 text-white rounded-xl flex items-center gap-2 
+                             border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 transition-all duration-300 min-w-[160px]"
+                >
+                  <span className="text-[#a8c7fa]/60 text-sm">Category:</span>
+                  <span className="text-white ml-1">{filters.category === 'all' ? 'All' : filters.category}</span>
+                  <svg className="w-4 h-4 ml-auto text-[#a8c7fa]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                  Category
-                </label>
-                <div className="relative">
-                  <select
-                    value={filters.category}
-                    onChange={(e) => updateFilters({ category: e.target.value })}
-                    className="w-full appearance-none bg-[#0c0c0c]/80 border border-[#a8c7fa]/10 rounded-xl px-4 py-3 text-white/90
-                             focus:outline-none focus:border-[#7042f88b] focus:ring-1 focus:ring-[#7042f88b] hover:border-[#7042f88b]/50
-                             transition-all duration-300 cursor-pointer backdrop-blur-sm"
-                  >
-                    <option value="all" className="bg-[#0c0c0c]">All Categories</option>
-                    <option value="whitelist" className="bg-[#0c0c0c]">Whitelist</option>
-                    <option value="airdrop" className="bg-[#0c0c0c]">Airdrop</option>
-                    <option value="reborn" className="bg-[#0c0c0c]">Reborn</option>
-                    <option value="genesis" className="bg-[#0c0c0c]">Genesis</option>
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#a8c7fa]/60 group-hover:text-[#7042f88b] transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                </button>
+                <div className="absolute top-full left-0 mt-2 w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-xl overflow-hidden opacity-0 
+                              invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                  <div className="py-1">
+                    {['all', 'whitelist', 'airdrop', 'reborn', 'genesis'].map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => updateFilters({ category })}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-[#7042f88b]/20 transition-colors
+                                   ${filters.category === category ? 'text-white bg-[#7042f88b]/10' : 'text-[#a8c7fa]/60'}`}
+                      >
+                        {category === 'all' ? 'All Categories' : category}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Sort By */}
-            <div className="flex-1 min-w-[180px]">
-              <div className="relative group">
-                <label className="inline-flex items-center gap-2 text-sm font-medium mb-2 text-[#a8c7fa] group-hover:text-[#7042f88b] transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+              {/* Sort Dropdown */}
+              <div className="relative group ml-auto">
+                <button 
+                  className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 text-white rounded-xl flex items-center gap-2 
+                             border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 transition-all duration-300 min-w-[160px]"
+                >
+                  <span className="text-[#a8c7fa]/60 text-sm">Sort by:</span>
+                  <span className="text-white ml-1">
+                    {filters.sortBy === 'newest' ? 'Newest' : 
+                     filters.sortBy === 'oldest' ? 'Oldest' :
+                     filters.sortBy === 'price_high_low' ? 'Price: High to Low' : 'Price: Low to High'}
+                  </span>
+                  <svg className="w-4 h-4 ml-auto text-[#a8c7fa]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                  Sort By
-                </label>
-                <div className="relative">
-                  <select
-                    value={filters.sortBy}
-                    onChange={(e) => updateFilters({ sortBy: e.target.value })}
-                    className="w-full appearance-none bg-[#0c0c0c]/80 border border-[#a8c7fa]/10 rounded-xl px-4 py-3 text-white/90
-                             focus:outline-none focus:border-[#7042f88b] focus:ring-1 focus:ring-[#7042f88b] hover:border-[#7042f88b]/50
-                             transition-all duration-300 cursor-pointer backdrop-blur-sm"
-                  >
-                    <option value="newest" className="bg-[#0c0c0c]">Newest First</option>
-                    <option value="oldest" className="bg-[#0c0c0c]">Oldest First</option>
-                    <option value="price_high_low" className="bg-[#0c0c0c]">Price: High to Low</option>
-                    <option value="price_low_high" className="bg-[#0c0c0c]">Price: Low to High</option>
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#a8c7fa]/60 group-hover:text-[#7042f88b] transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                </button>
+                <div className="absolute top-full right-0 mt-2 w-48 bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-xl overflow-hidden opacity-0 
+                              invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                  <div className="py-1">
+                    {[
+                      { value: 'newest', label: 'Newest First' },
+                      { value: 'oldest', label: 'Oldest First' },
+                      { value: 'price_high_low', label: 'Price: High to Low' },
+                      { value: 'price_low_high', label: 'Price: Low to High' }
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => updateFilters({ sortBy: option.value })}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-[#7042f88b]/20 transition-colors
+                                   ${filters.sortBy === option.value ? 'text-white bg-[#7042f88b]/10' : 'text-[#a8c7fa]/60'}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>

@@ -157,7 +157,7 @@ const Hero: React.FC = () => {
               >
                 Welcome to{" "}
                 <span className="bg-gradient-to-r from-white to-[#a8c7fa] bg-clip-text text-transparent">
-                  Providence
+                  Providence f8
                 </span>
               </motion.h1>
               <motion.p 
