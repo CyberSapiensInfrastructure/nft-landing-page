@@ -30,14 +30,14 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ className = "" }) => {
   return (
     <>
       {isConnected ? (
-        <div className={`flex items-center gap-3 ${className}`}>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#0c0c0c]/50 rounded-lg border border-[#a8c7fa]/10">
+        <div className={`flex items-center gap-3 ${className} `}>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#a8c7fa]/10">
             <span className="w-2 h-2 rounded-full bg-green-500"></span>
             <span className="text-sm text-[#a8c7fa]/60">{chainName}</span>
           </div>
           <button
             onClick={() => open()}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 
+            className="flex items-center gap-2 px-4 py-2  hover:bg-[#0c0c0c]/80 
                      border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 rounded-xl transition-all duration-300"
           >
             <span className="text-sm">{formatAddress(address || "")}</span>

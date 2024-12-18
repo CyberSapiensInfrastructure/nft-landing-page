@@ -159,33 +159,9 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
   
       <div className="flex-1 flex flex-col gap-3 w-full">
         {/* Mobile Filter Bar */}
-        <div className="z-30  border-b border-[#a8c7fa]/10">
+        <div className="z-30 flex items-end  justify-end p-3 border-b border-[#a8c7fa]/10">
           {/* All/My NFTs ve View Toggle */}
-          <div className="flex items-center justify-between p-3">
-            {/* All/My NFTs Toggle */}
-            <div className="flex gap-1.5 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
-              <button
-                onClick={() => handleTabChange("all")}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                  activeTab === "all"
-                    ? "bg-[#7042f88b] text-white"
-                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-                }`}
-              >
-                All NFTs
-              </button>
-              <button
-                onClick={() => handleTabChange("my")}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                  activeTab === "my"
-                    ? "bg-[#7042f88b] text-white"
-                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-                }`}
-              >
-                My NFTs
-              </button>
-            </div>
-
+          <div className="flex items-end">
             {/* View Toggle */}
             <div className="flex gap-1.5 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
               <button
@@ -211,26 +187,7 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
             </div>
           </div>
 
-          {/* Filter Buttons */}
-          <div className="overflow-x-auto scrollbar-none">
-            <div className="flex gap-1.5 p-3 pt-0 min-w-min">
-              {filters.map((filter) => (
-                <button
-                  key={filter.id}
-                  onClick={() => setFilterSelected(filter.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all
-                  ${
-                    filterSelected === filter.id
-                      ? "bg-[#7042f88b] text-white"
-                      : "bg-[#0c0c0c]/80 text-[#a8c7fa]/60 hover:text-[#a8c7fa] border border-[#a8c7fa]/10"
-                  }`}
-                >
-                  <svg className="w-4 h-4">{filter.icon}</svg>
-                  <span>{filter.title}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+      
         </div>
 
         {/* Main Content */}

@@ -49,11 +49,11 @@ const Layout: React.FC = () => {
   const [myNFTs, setMyNFTs] = useState<NFT[]>([]);
   const [view, setView] = useState<"list" | "grid">("list");
 
-  // Filtreleme için yeni state'ler
+  // Yeni filtreleme state'i
   const [filters, setFilters] = useState({
-    status: 'all', // all, completed, not_completed
-    category: 'all', // all, whitelist, airdrop, reborn, genesis
-    sortBy: 'newest' // newest, oldest, price_high_low, price_low_high
+    status: 'all',
+    category: 'all',
+    sortBy: 'newest'
   });
 
   // NFT koleksiyonunu filtreleme
@@ -244,173 +244,134 @@ const Layout: React.FC = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
-        {/* Filtreler */}
-        <div className=" p-4">
-          <h2 className="text-2xl font-bold mb-6">Filters</h2>
-          <div className=" flex items-center gap-4 w-full">
+        {/* Yeni filtre tasarımı */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-12">
+          {/* Quick Filter Tabs */}
+          <div className="flex flex-wrap gap-3">
+            <button 
+              onClick={() => setActiveTab("all")}
+              className={`px-6 py-2.5 ${activeTab === "all" ? 'bg-[#7042f88b]' : 'bg-[#0c0c0c] border border-[#a8c7fa]/10'} 
+                         text-white rounded-xl flex items-center gap-2 hover:bg-[#7042f88b]/80 transition-all duration-300`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              all nfts
+            </button>
+            <button 
+              onClick={() => setActiveTab("my")}
+              className={`px-6 py-2.5 ${activeTab === "my" ? 'bg-[#7042f88b]' : 'bg-[#0c0c0c] border border-[#a8c7fa]/10'} 
+                         text-white rounded-xl flex items-center gap-2 hover:bg-[#7042f88b]/80 transition-all duration-300`}
+            >
+              my nfts
+            </button>
+          </div>
+
+          {/* Filter Buttons */}
+          <div className="flex flex-wrap items-center gap-4">
             {/* Status Filter */}
-            <div>
-              <h3 className="text-sm font-medium mb-3">Status</h3>
-              <select
-                value={filters.status}
-                onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-lg p-2"
-              >
-                <option value="all">All Status</option>
-                <option value="completed">Completed</option>
-                <option value="not_completed">Not Completed</option>
-              </select>
+            <div className="relative group">
+              <button className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 text-white rounded-xl 
+                               flex items-center gap-2 border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 
+                               transition-all duration-300 min-w-[160px]">
+                <span className="text-[#a8c7fa]/60 text-sm">status:</span>
+                <span className="text-white">{filters.status}</span>
+                <svg className="w-4 h-4 ml-auto text-[#a8c7fa]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute top-full left-0 mt-2 w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 
+                            rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 
+                            group-hover:visible transition-all duration-300 z-50">
+                <div className="py-1">
+                  {['all', 'completed', 'not_completed'].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setFilters(prev => ({ ...prev, status }))}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-[#7042f88b]/20 transition-colors
+                               text-[#a8c7fa]/60 hover:text-white"
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Category Filter */}
-            <div>
-              <h3 className="text-sm font-medium mb-3">Category</h3>
-              <select
-                value={filters.category}
-                onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-lg p-2"
-              >
-                <option value="all">All Categories</option>
-                <option value="whitelist">Whitelist</option>
-                <option value="airdrop">Airdrop</option>
-                <option value="reborn">Reborn</option>
-                <option value="genesis">Genesis</option>
-              </select>
-            </div>
-
-            {/* Sort By */}
-            <div>
-              <h3 className="text-sm font-medium mb-3">Sort By</h3>
-              <select
-                value={filters.sortBy}
-                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                className="w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-lg p-2"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="price_high_low">Price: High to Low</option>
-                <option value="price_low_high">Price: Low to High</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* NFT Grid ve Sağ Panel */}
-        <div className="flex-1 flex">
-          {/* NFT Grid */}
-          <div className={`flex-1 ${selectedNFT ? 'lg:pr-4' : ''}`}>
-            <NFTGrid
-              nfts={filteredNFTs}
-              isLoading={isLoading}
-              onSelect={handleNFTSelect}
-              selectedNFTId={selectedNFT?.id}
-              view={view}
-              onViewChange={setView}
-              onTabChange={setActiveTab}
-            />
-          </div>
-
-          {/* Sağ Panel - NFT Detayları (Desktop) */}
-          {selectedNFT && (
-            <div className="hidden lg:block w-[400px] border-l border-[#a8c7fa]/10">
-              <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-[#a8c7fa]/10 scrollbar-track-transparent">
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="p-6 flex flex-col min-h-full"
-                >
-                  {/* NFT Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-medium">NFT Details</h2>
-                    <div
-                      className={`px-2 py-1 rounded-full text-sm font-medium 
-                      ${
-                        selectedNFT.status === "completed"
-                          ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                          : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                      }`}
+            <div className="relative group">
+              <button className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 text-white rounded-xl 
+                               flex items-center gap-2 border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 
+                               transition-all duration-300 min-w-[160px]">
+                <span className="text-[#a8c7fa]/60 text-sm">category:</span>
+                <span className="text-white">{filters.category}</span>
+                <svg className="w-4 h-4 ml-auto text-[#a8c7fa]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute top-full left-0 mt-2 w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 
+                            rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 
+                            group-hover:visible transition-all duration-300 z-50">
+                <div className="py-1">
+                  {['all', 'whitelist', 'airdrop', 'reborn', 'genesis'].map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => setFilters(prev => ({ ...prev, category }))}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-[#7042f88b]/20 transition-colors
+                               text-[#a8c7fa]/60 hover:text-white"
                     >
-                      {selectedNFT.status === "completed" ? "Completed" : "In Progress"}
-                    </div>
-                  </div>
-
-                  {/* NFT Content */}
-                  <div className="flex-grow flex flex-col">
-                    {/* Image Container */}
-                    <div className="relative aspect-square mb-6">
-                      <img
-                        src={selectedNFT.image}
-                        alt={selectedNFT.name}
-                        className="w-full h-full object-cover rounded-xl"
-                      />
-                    </div>
-
-                    {/* Info Container */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-white">
-                        {selectedNFT.name}
-                      </h3>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-[#a8c7fa]/5 p-3 rounded-xl">
-                          <span className="text-[#a8c7fa]/60 text-sm">
-                            Mission Amount
-                          </span>
-                          <p className="text-white font-medium mt-1">
-                            {selectedNFT.missionAmount}
-                          </p>
-                        </div>
-                        <div className="bg-[#a8c7fa]/5 p-3 rounded-xl">
-                          <span className="text-[#a8c7fa]/60 text-sm">
-                            Expires
-                          </span>
-                          <p className="text-white font-medium mt-1">
-                            {selectedNFT.expireDate}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="space-y-3 mt-6">
-                    {!selectedNFT.status && (
-                      <button className="w-full px-4 py-3 bg-[#d8624b]/20 hover:bg-[#d8624b]/40 border border-[#d8624b]/30 
-                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        Mint NFT
-                      </button>
-                    )}
-
-                    {selectedNFT.status === "completed" && (
-                      <button className="w-full px-4 py-3 bg-[#7042f8]/20 hover:bg-[#7042f8]/40 border border-[#7042f8]/30 
-                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                        </svg>
-                        Transfer NFT
-                      </button>
-                    )}
-
-                    <Link
-                      to={`/nft/${selectedNFT.id}`}
-                      className="w-full px-4 py-3 bg-[#a8c7fa]/20 hover:bg-[#a8c7fa]/40 border border-[#a8c7fa]/30 
-                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2"
-                    >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      View Full Details
-                    </Link>
-                  </div>
-                </motion.div>
+                      {category}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          )}
+
+            {/* Sort Dropdown */}
+            <div className="relative group ml-auto">
+              <button className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 text-white rounded-xl 
+                               flex items-center gap-2 border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 
+                               transition-all duration-300 min-w-[160px]">
+                <span className="text-[#a8c7fa]/60 text-sm">sort by:</span>
+                <span className="text-white">{filters.sortBy}</span>
+                <svg className="w-4 h-4 ml-auto text-[#a8c7fa]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute top-full right-0 mt-2 w-48 bg-[#0c0c0c] border border-[#a8c7fa]/10 
+                            rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 
+                            group-hover:visible transition-all duration-300 z-50">
+                <div className="py-1">
+                  {[
+                    { value: 'newest', label: 'newest first' },
+                    { value: 'oldest', label: 'oldest first' },
+                    { value: 'price_high_low', label: 'price: high to low' },
+                    { value: 'price_low_high', label: 'price: low to high' }
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setFilters(prev => ({ ...prev, sortBy: option.value }))}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-[#7042f88b]/20 transition-colors
+                               text-[#a8c7fa]/60 hover:text-white"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* NFT Grid */}
+        <NFTGrid
+          nfts={filteredNFTs}
+          isLoading={isLoading}
+          onSelect={handleNFTSelect}
+          selectedNFTId={selectedNFT?.id}
+          view={view}
+          onViewChange={setView}
+        />
       </div>
 
       {/* Bottom Sheet (Mobile) */}
