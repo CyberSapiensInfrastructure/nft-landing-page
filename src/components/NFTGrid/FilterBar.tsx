@@ -7,7 +7,7 @@ interface FilterBarProps {
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({ filters, filterSelected, setFilterSelected }) => (
-  <div className="overflow-x-auto scrollbar-none">
+  <div className="overflow-x-auto scrollbar-non">
     <div className="flex gap-1.5 p-3 pt-0 min-w-min">
       {filters.map((filter) => (
         <button

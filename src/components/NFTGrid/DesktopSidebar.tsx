@@ -13,7 +13,7 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
   filterSelected,
   setFilterSelected
 }) => (
-  <div className={`hidden lg:flex ${isMenuCollapsed ? 'w-[60px]' : 'w-[200px]'} h-full fixed left-0 top-[4.5rem] bg-[#0c0c0c]/95 backdrop-blur-md border-r border-[#a8c7fa]/10 flex-col transition-all duration-300`}>
+  <div className={`hidden lg:flex ${isMenuCollapsed ? 'w-[60px]' : 'w-[200px]'} h-full fixed left-0 !top-[56px] bg-[#0c0c0c]/95 backdrop-blur-md border-r border-[#a8c7fa]/10 flex-col transition-all duration-300`}>
     <button
       onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
       className="absolute -right-3 top-4 w-6 h-6 bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-full flex items-center justify-center text-[#a8c7fa]/60 hover:text-[#a8c7fa]"

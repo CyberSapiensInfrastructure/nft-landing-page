@@ -16,9 +16,6 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   onViewChange, 
   activeTab, 
   handleTabChange,
-  filters,
-  filterSelected,
-  setFilterSelected
 }) => (
   <div className="sticky top-0 z-10 hidden lg:block">
     {/* Top Bar with All/My NFTs and View Toggle */}

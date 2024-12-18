@@ -45,8 +45,8 @@ const Header: React.FC = () => {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="max-w-7xl mx-auto px-3 py-2">
-          <div className="flex items-center justify-between bg-[#0c0c0c]/50 backdrop-blur-md border border-[#a8c7fa]/10 rounded-xl p-2">
+        <div className=" mx-auto">
+          <div className="flex items-center justify-between bg-[#0c0c0c]/50 backdrop-blur-md border border-[#a8c7fa]/10 p-2">
             {/* Logo & Brand */}
             <div className="flex items-center gap-4">
               <a
