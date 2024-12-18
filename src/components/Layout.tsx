@@ -245,9 +245,9 @@ const Layout: React.FC = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         {/* Filtreler */}
-        <div className="lg:w-64 p-4">
+        <div className=" p-4">
           <h2 className="text-2xl font-bold mb-6">Filters</h2>
-          <div className="space-y-8">
+          <div className=" flex items-center gap-4 w-full">
             {/* Status Filter */}
             <div>
               <h3 className="text-sm font-medium mb-3">Status</h3>

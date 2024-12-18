@@ -28,7 +28,7 @@ const MobileMenu: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#a8c7fa]/10">
           <Link to="/" onClick={onClose} className="text-xl font-bold bg-gradient-to-r from-white to-[#a8c7fa] bg-clip-text text-transparent">
-            providence
+            providencef8
           </Link>
           <button 
             onClick={onClose}

@@ -29,17 +29,30 @@ const Categories: React.FC = () => {
     <section className="py-16 relative">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center mb-12">
-          <h2 className="text-3xl font-bold lowercase">Browse Categories</h2>
+          <h2 className="text-3xl font-bold lowercase">browse categories</h2>
           
-          {/* Filtreler */}
+          {/* Quick Filter Tabs */}
+          <div className="flex flex-wrap gap-3">
+            <button className="px-6 py-2.5 bg-[#7042f88b] text-white rounded-xl flex items-center gap-2 hover:bg-[#7042f8] transition-all duration-300">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              all nfts
+            </button>
+            <button className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#7042f88b]/20 text-[#a8c7fa]/60 hover:text-white rounded-xl flex items-center gap-2 transition-all duration-300 border border-[#a8c7fa]/10">
+              my nfts
+            </button>
+          </div>
+
+          {/* Filter Buttons */}
           <div className="flex flex-wrap items-center gap-4">
             {/* Status Filter */}
             <div className="relative group">
               <button className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 text-white rounded-xl 
                                flex items-center gap-2 border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 
                                transition-all duration-300 min-w-[160px]">
-                <span className="text-[#a8c7fa]/60 text-sm lowercase">STATUS:</span>
-                <span className="text-white lowercase">ALL</span>
+                <span className="text-[#a8c7fa]/60 text-sm">status:</span>
+                <span className="text-white">all</span>
                 <svg className="w-4 h-4 ml-auto text-[#a8c7fa]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -61,13 +74,13 @@ const Categories: React.FC = () => {
               </div>
             </div>
 
-            {/* Sort Filter */}
-            <div className="relative group">
+            {/* Sort Dropdown */}
+            <div className="relative group ml-auto">
               <button className="px-6 py-2.5 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 text-white rounded-xl 
                                flex items-center gap-2 border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 
                                transition-all duration-300 min-w-[160px]">
-                <span className="text-[#a8c7fa]/60 text-sm lowercase">SORT BY:</span>
-                <span className="text-white lowercase">NEWEST</span>
+                <span className="text-[#a8c7fa]/60 text-sm">sort by:</span>
+                <span className="text-white">newest</span>
                 <svg className="w-4 h-4 ml-auto text-[#a8c7fa]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
