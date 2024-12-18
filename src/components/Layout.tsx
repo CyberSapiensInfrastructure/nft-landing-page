@@ -19,67 +19,24 @@ import Hero from './Hero';
 import Categories from './Categories';
 import TrendingNFTs from './TrendingNFTs';
 import { BottomSheet } from './BottomSheet';
+import { useScrollToTop } from '../hooks/useScrollToTop';
 
 const BackgroundCompiler = React.lazy(
   () => import("../components/BackgroundCompiler")
 );
 
-export const DecoElements = React.memo(() => (
-  <>
-    {/* Noise overlay */}
-    <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.015] mix-blend-soft-light">
-      <div className="absolute inset-0 bg-noise animate-noise" />
+export const DecoElements = () => (
+  <div className="pointer-events-none fixed inset-0 z-30 transition duration-300" aria-hidden="true">
+    <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute left-[--gradient-left,0] top-0 h-[--gradient-size,_400px] w-[--gradient-size,_400px] rounded-full bg-gradient-radial from-[#7042f860] to-transparent opacity-50 blur-[100px]" />
+      <div className="absolute right-1/4 top-1/4 h-[--gradient-size,_400px] w-[--gradient-size,_400px] rounded-full bg-gradient-radial from-[#7042f860] to-transparent opacity-50 blur-[100px]" />
+      <div className="absolute bottom-1/4 left-1/3 h-[--gradient-size,_400px] w-[--gradient-size,_400px] rounded-full bg-gradient-radial from-[#7042f860] to-transparent opacity-50 blur-[100px]" />
     </div>
-
-    {/* Particle grid */}
-    <div className="fixed inset-0 z-0 pointer-events-none">
-      {[...Array(20)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute w-1 h-1 bg-[#7042f88b]/20 rounded-full animate-particle"
-          style={{
-            left: `${Math.random() * 100}vw`,
-            top: `${Math.random() * 100}vh`,
-            animationDelay: `${Math.random() * 10}s`,
-            animationDuration: `${20 + Math.random() * 20}s`,
-          }}
-        />
-      ))}
-    </div>
-
-    {/* Cyber circles */}
-    <div className="fixed left-10 top-40 opacity-30 pointer-events-none z-0">
-      <div className="relative w-64 h-64">
-        <div className="absolute inset-0 border border-[#7042f88b]/20 rounded-full animate-spin-slow" />
-        <div className="absolute inset-2 border border-[#7042f88b]/10 rounded-full animate-spin-reverse" />
-        <div className="absolute inset-4 border border-[#7042f88b]/5 rounded-full animate-spin-slow" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-2 h-2 bg-[#7042f88b]/40 rounded-full animate-pulse" />
-        </div>
-      </div>
-    </div>
-
-    {/* Energy beams */}
-    {[...Array(3)].map((_, i) => (
-      <div
-        key={i}
-        className="fixed opacity-20 pointer-events-none overflow-hidden"
-        style={{
-          left: `${30 + i * 30}%`,
-          top: "20%",
-          transform: "rotate(45deg)",
-        }}
-      >
-        <div
-          className="w-[1px] h-[200px] bg-gradient-to-b from-transparent via-[#7042f88b] to-transparent animate-energy-beam"
-          style={{ animationDelay: `${i * 2}s` }}
-        />
-      </div>
-    ))}
-  </>
-));
+  </div>
+);
 
 const Layout: React.FC = () => {
+  useScrollToTop();
   const { walletProvider } = useWeb3ModalProvider();
   const [walletAddress, setWalletAddress] = useState<string>("");
   const dispatch = useDispatch();
@@ -266,7 +223,7 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white flex flex-col font-orbitron relative">
+    <div className="site-font lowercase w-full min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white flex flex-col font-orbitron relative">
       {/* Background Elements */}
       <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.05] mix-blend-soft-light">
         <div className="absolute inset-0 bg-noise animate-noise" />

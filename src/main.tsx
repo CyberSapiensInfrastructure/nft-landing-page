@@ -10,8 +10,12 @@ import ShuffleLoader from "./components/Loader";
 import Layout from "./components/Layout";
 import NFTListPage from "./pages/NFTListPage";
 import { NFTDetail } from "./pages/NFTDetail";
+import Marketplace from "./pages/Marketplace";
+import Community from "./pages/Community";
+import About from "./pages/About";
 import { Error } from "./components/Error";
 import { createWeb3Modal, defaultConfig } from "@web3modal/ethers5/react";
+
 
 const projectId = "25b13b447fae3f9ebc44a23731bf9842";
 
@@ -49,6 +53,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Route path="/" element={<Layout />} />
           <Route path="/list" element={<NFTListPage />} />
           <Route path="/nft/:id" element={<NFTDetail />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/about" element={<About />} />
           <Route path="*" element={<Error />} />
         </Routes>
       </Suspense>

@@ -8,8 +8,10 @@ import Footer from '../components/Footer';
 import { DecoElements } from '../components/Layout';
 import NFTCard from '../components/NFTCard';
 import { BottomSheet } from '../components/BottomSheet';
+import { useScrollToTop } from '../hooks/useScrollToTop';
 
 const NFTListPage: React.FC = () => {
+  useScrollToTop();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [view, setView] = useState<"list" | "grid">("grid");
@@ -120,7 +122,7 @@ const NFTListPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white">
+    <div className="min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white lowercase">
       <DecoElements />
     
 

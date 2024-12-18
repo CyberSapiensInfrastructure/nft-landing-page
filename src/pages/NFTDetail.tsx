@@ -3,14 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import nftImage from '../assets/img/nft.jpg';
 import { DecoElements } from '../components/Layout';
 import { useEffect } from 'react';
+import { useScrollToTop } from '../hooks/useScrollToTop';
 
 export const NFTDetail = () => {
+  useScrollToTop();
   const { id } = useParams();
-
-  // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
 
   const nft = {
     id: Number(id),

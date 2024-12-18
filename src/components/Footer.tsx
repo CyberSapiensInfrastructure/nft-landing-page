@@ -2,7 +2,7 @@ import providenceVideo from "../assets/video/footer_video.mp4";
 
 const Footer = () => {
   return (
-    <footer className="relative border-t border-[#d8624b]/10 py-6 sm:py-8 overflow-hidden">
+    <footer className="relative border-t border-[#d8624b]/10 py-6 sm:py-8 overflow-hidden !lowercase">
       {/* Footer fade overlay */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-32 inset-x-0 h-32 bg-gradient-to-b from-transparent to-[#0f0514]" />
@@ -109,7 +109,7 @@ const Footer = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="w-1 h-1 bg-[#d8624b]/40" />
-              <span className="uppercase">
+              <span className="">
                 Built with passion in CYBERSAPIENS Labs
               </span>
             </div>

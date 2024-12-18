@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
 import ConnectButton from './ConnectButton';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useLocation } from 'react-router-dom';
+import { useWeb3ModalAccount } from '@web3modal/ethers5/react';
 
 const MobileMenu: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const location = useLocation();
+  const { isConnected } = useWeb3ModalAccount();
+  
+  const navItems = [
+    { path: '/', label: 'home' },
+    { path: '/marketplace', label: 'marketplace' },
+    { path: '/community', label: 'community' },
+    { path: '/about', label: 'about' }
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, x: "100%" }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: "100%" }}
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
-      className={`fixed inset-y-0 right-0 w-72 bg-gradient-to-b from-[#0c0c0c]/95 to-[#0c0c0c]/98 
-                 backdrop-blur-xl border-l border-[#a8c7fa]/10 z-50 shadow-2xl`}
+      className="fixed inset-y-0 right-0 w-full sm:w-80 bg-gradient-to-b from-[#0c0c0c]/95 to-[#0c0c0c]/98 
+                backdrop-blur-xl border-l border-[#a8c7fa]/10 z-50 shadow-2xl"
     >
-      <div className="p-8 space-y-8">
-        <div className="flex justify-end">
+      <div className="h-full flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-[#a8c7fa]/10">
+          <Link to="/" onClick={onClose} className="text-xl font-bold bg-gradient-to-r from-white to-[#a8c7fa] bg-clip-text text-transparent">
+            providence
+          </Link>
           <button 
             onClick={onClose}
             className="p-2 hover:bg-[#a8c7fa]/10 rounded-full transition-all duration-300"
@@ -23,103 +39,110 @@ const MobileMenu: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen
             </svg>
           </button>
         </div>
-        
-        <nav className="space-y-2">
-          {['Explore', 'Marketplace', 'Documentation'].map((item) => (
-            <a
-              key={item}
-              href="#"
-              className="group flex items-center px-4 py-3 text-[#a8c7fa]/60 hover:text-[#a8c7fa] 
-                         rounded-xl transition-all duration-300 hover:bg-gradient-to-r 
-                         from-[#a8c7fa]/5 to-transparent"
-            >
-              <span className="relative">
-                {item}
-                <span className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-[#a8c7fa]/50 to-transparent 
-                               scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-              </span>
-            </a>
-          ))}
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-6 px-4">
+          <div className="space-y-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={onClose}
+                className={`group flex items-center px-4 py-3 rounded-xl transition-all duration-300 
+                           hover:bg-gradient-to-r from-[#a8c7fa]/5 to-transparent
+                           ${location.pathname === item.path 
+                             ? 'text-white bg-[#7042f88b]/10' 
+                             : 'text-[#a8c7fa]/60 hover:text-[#a8c7fa]'}`}
+              >
+                <span className="relative">
+                  {item.label}
+                  <span className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-[#a8c7fa]/50 to-transparent 
+                                 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                </span>
+              </Link>
+            ))}
+          </div>
         </nav>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-[#a8c7fa]/10">
+          {!isConnected ? (
+            <ConnectButton className="w-full btn btn-primary" />
+          ) : (
+            <div className="space-y-4">
+              <Link
+                to="/list"
+                onClick={onClose}
+                className="w-full btn btn-primary flex items-center justify-center gap-2"
+              >
+                <span>explore nfts</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+              <ConnectButton className="w-full" />
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
 };
 
 const Header: React.FC = () => {
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { path: '/', label: 'home' },
+    { path: '/marketplace', label: 'marketplace' },
+    { path: '/community', label: 'community' },
+    { path: '/about', label: 'about' }
+  ];
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16 bg-gradient-to-r from-[#0c0c0c]/80 to-[#0c0c0c]/70 
-                         backdrop-blur-xl border border-[#a8c7fa]/10 rounded-2xl my-4 px-4">
-            {/* Logo & Brand */}
-            <div className="flex items-center gap-6">
-              <a
-                href="https://playprovidence.io"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 hover:text-[#7042f88b] transition-all duration-500 group"
-              >
-                {/* Enhanced Logo Square */}
-                <div className="relative w-9 h-9 bg-gradient-to-br from-[#7042f88b]/20 via-[#7042f88b]/10 to-transparent 
-                              rounded-xl border border-[#7042f88b]/20 group-hover:border-[#7042f88b]/40 
-                              transition-all duration-500 overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-[#d8624b] rounded-full group-hover:scale-150 
-                                  transition-all duration-700 ease-out" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 
-                                group-hover:opacity-100 transition-all duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-tl from-[#7042f88b]/20 to-transparent opacity-0 
-                                group-hover:opacity-100 transition-all duration-500 delay-100" />
-                </div>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/90 to-transparent backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-white to-[#a8c7fa] bg-clip-text text-transparent lowercase">
+              providence
+            </Link>
 
-                {/* Enhanced Brand Name */}
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium tracking-[0.25em] bg-gradient-to-r from-white to-[#a8c7fa]/80 
-                                 bg-clip-text text-transparent">PROVIDENCE</span>
-                  <span className="text-[10px] text-[#a8c7fa]/60 tracking-wider">F8 Collection</span>
-                </div>
-              </a>
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-8">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`text-sm transition-colors duration-300 lowercase
+                    ${location.pathname === item.path 
+                      ? 'text-white' 
+                      : 'text-[#a8c7fa]/60 hover:text-white'}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
 
-              {/* Navigation Links */}
-              <nav className="hidden md:flex items-center gap-6 text-sm">
-                {['Explore', 'Marketplace', 'Documentation'].map((item) => (
-                  <a
-                    key={item}
-                    href="#"
-                    className="group relative text-[#a8c7fa]/60 hover:text-[#a8c7fa] transition-colors duration-300"
-                  >
-                    {item}
-                    <span className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-[#7042f88b] to-transparent 
-                                   scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                  </a>
-                ))}
-              </nav>
-            </div>
-
-            {/* Right Side Actions */}
+            {/* Action Buttons */}
             <div className="flex items-center gap-4">
-              {/* Network Indicator */}
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-[#a8c7fa]/5 to-transparent 
-                            rounded-xl border border-[#a8c7fa]/10">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-xs text-[#a8c7fa]/60">Ethereum Network</span>
+              <div className="hidden md:block">
+                <ConnectButton className="btn btn-secondary" />
               </div>
-
-              {/* Connect Button */}
-              <ConnectButton />
-
-              {/* Mobile Menu Button */}
-              <button 
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="md:hidden p-2 hover:bg-[#a8c7fa]/10 rounded-xl transition-all duration-300"
+              <Link
+                to="/list"
+                className="btn btn-primary lowercase"
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+                explore
+              </Link>
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="p-2 md:hidden hover:bg-[#a8c7fa]/10 rounded-xl transition-all duration-300"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
                 </svg>
               </button>
             </div>
