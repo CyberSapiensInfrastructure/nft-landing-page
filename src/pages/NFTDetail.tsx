@@ -2,7 +2,6 @@ import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import nftImage from '../assets/img/nft.jpg';
 import { DecoElements } from '../components/Layout';
-import { useEffect } from 'react';
 import { useScrollToTop } from '../hooks/useScrollToTop';
 
 export const NFTDetail = () => {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { DecoElements } from '../components/Layout';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
@@ -21,7 +21,7 @@ const Marketplace: React.FC = () => {
   const [view, setView] = useState<"grid" | "list">("list");
   const [selectedNFT, setSelectedNFT] = useState<NFT | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [nftCollection, setNftCollection] = useState<NFT[]>([
+  const nftCollection = [
     {
       id: 1,
       name: "WHITELIST",
@@ -58,7 +58,22 @@ const Marketplace: React.FC = () => {
       expireDate: "31.12.2024 - 23:59:59",
       missionAmount: 3,
     },
-  ]);
+  ];
+
+  useEffect(() => {
+    const loadNFTs = async () => {
+      setIsLoading(true);
+      try {
+        // Simulating API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        // NFT data is already set in state
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadNFTs();
+  }, []);
 
   // Filtreleme mantığı
   const filteredNFTs = useMemo(() => {

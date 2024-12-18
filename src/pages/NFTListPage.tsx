@@ -3,7 +3,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { NFT } from '../components/NFTGrid';
 import { motion, AnimatePresence } from 'framer-motion';
 import nftImage from '../assets/img/nft.jpg';
-import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { DecoElements } from '../components/Layout';
 import NFTCard from '../components/NFTCard';

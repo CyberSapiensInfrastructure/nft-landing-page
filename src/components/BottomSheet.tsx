@@ -11,7 +11,6 @@ interface BottomSheetProps {
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({
   selectedNFT,
-  isOpen,
   onClose,
 }) => {
   return (
