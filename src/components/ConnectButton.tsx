@@ -1,5 +1,4 @@
 import { useWeb3Modal, useWeb3ModalAccount } from "@web3modal/ethers5/react";
-import CornerDots from "./CornerDots";
 import Button from "./Button";
 
 const ConnectButton: React.FC = () => {

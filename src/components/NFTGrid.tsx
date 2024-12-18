@@ -32,7 +32,6 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
 }) => {
   const [filterSelected, setFilterSelected] = useState(1);
   const [activeTab, setActiveTab] = useState<"all" | "my">("all");
-  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const filters = [
