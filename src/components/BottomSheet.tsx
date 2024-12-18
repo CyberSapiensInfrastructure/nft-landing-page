@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { NFT } from './NFTGrid';
+import { Link } from 'react-router-dom';
 
 interface BottomSheetProps {
   selectedNFT: NFT;
@@ -20,7 +21,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 20, stiffness: 100 }}
       className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#0c0c0c]/95 backdrop-blur-xl 
-                 border-l border-[#a8c7fa]/10 z-50 overflow-y-auto"
+                 border-l border-[#a8c7fa]/10 z-[150] overflow-y-auto"
     >
       {/* Header */}
       <div className="sticky top-0 bg-[#0c0c0c]/95 backdrop-blur-xl border-b border-[#a8c7fa]/10 p-4">
@@ -81,13 +82,24 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           )}
         </div>
 
-        {/* Action Button */}
-        <button 
-          className="w-full py-3 bg-[#7042f88b] hover:bg-[#7042f88b]/80 
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-3">
+          <Link 
+            to={`/nft/${selectedNFT.id}`}
+            className="w-full py-3 bg-[#7042f88b] hover:bg-[#7042f88b]/80 
+                     rounded-xl transition-all duration-300 text-center"
+          >
+            view details
+          </Link>
+          
+          <button 
+            className="w-full py-3 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 
+                     border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50
                      rounded-xl transition-all duration-300"
-        >
-          view on marketplace
-        </button>
+          >
+            view on marketplace
+          </button>
+        </div>
       </div>
     </motion.div>
   );

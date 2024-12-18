@@ -34,7 +34,6 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
 }) => {
   const [filterSelected, setFilterSelected] = useState(1);
   const [activeTab, setActiveTab] = useState<"all" | "my">("all");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const filters = [
     {
@@ -157,192 +156,144 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
   }
 
   return (
-    <div className="w-full h-full flex">
-  
-      <div className="flex-1 flex flex-col gap-3 w-full">
-        {/* Mobile Filter Bar */}
-        <div className="z-30 flex items-end  justify-end p-3 border-b border-[#a8c7fa]/10">
-          {/* All/My NFTs ve View Toggle */}
-          <div className="flex items-end">
-            {/* View Toggle */}
-            <div className="flex gap-1.5 p-1 bg-[#0c0c0c]/80 rounded-lg border border-[#a8c7fa]/10">
-              <button
-                onClick={() => onViewChange("grid")}
-                className={`flex items-center justify-center p-1.5 rounded-lg transition-all ${
-                  view === "grid"
-                    ? "bg-[#7042f88b] text-white"
-                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
+    <div className="w-full h-full flex flex-col gap-6">
+     
+
+      {/* Content Area */}
+      <div className="w-full">
+        {view === "grid" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-3">
+            {nfts.map((nft) => (
+              <div
+                key={nft.id}
+                onClick={() => onSelect(nft)}
+                className={`relative group bg-[#0c0c0c]/50 backdrop-blur-md border border-[#a8c7fa]/10 rounded-xl p-3 
+                hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer z-[1]
+                ${
+                  selectedNFTId === nft.id ? "ring-2 ring-[#7042f88b]" : ""
                 }`}
               >
-                <ViewGridIcon />
-              </button>
-              <button
-                onClick={() => onViewChange("list")}
-                className={`flex items-center justify-center p-1.5 rounded-lg transition-all ${
-                  view === "list"
-                    ? "bg-[#7042f88b] text-white"
-                    : "text-[#a8c7fa]/60 hover:text-[#a8c7fa]"
-                }`}
-              >
-                <ViewListIcon />
-              </button>
-            </div>
-          </div>
-
-      
-        </div>
-
-        {/* Main Content */}
-        <div
-          className={`flex-1 overflow-auto h-[200px]
-            `}
-        >
-          {/* Content Area */}
-          <div className="w-full">
-            {view === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-3">
-                {nfts.map((nft) => (
-                  <div
-                    key={nft.id}
-                    onClick={() => onSelect(nft)}
-                    className={`relative group bg-[#0c0c0c]/50 backdrop-blur-md border border-[#a8c7fa]/10 rounded-xl p-3 
-                    hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer
+                <img
+                  src={nft.image}
+                  alt={nft.name}
+                  className="w-full aspect-square object-cover rounded-lg"
+                />
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-medium text-white truncate">
+                      {nft.name}
+                    </h3>
+                    <div
+                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap
                     ${
-                      selectedNFTId === nft.id ? "ring-2 ring-[#7042f88b]" : ""
+                      nft.status === "completed"
+                        ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                        : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
                     }`}
-                    style={{ zIndex: 10 }}
-                  >
-                    <img
-                      src={nft.image}
-                      alt={nft.name}
-                      className="w-full aspect-square object-cover rounded-lg"
-                    />
-                    <div className="mt-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-base font-medium text-white truncate">
-                          {nft.name}
-                        </h3>
-                        <div
-                          className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap
-                        ${
-                          nft.status === "completed"
-                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                            : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                        }`}
-                        >
-                          {nft.status === "completed"
-                            ? "Completed"
-                            : "In Progress"}
-                        </div>
-                      </div>
+                    >
+                      {nft.status === "completed"
+                        ? "Completed"
+                        : "In Progress"}
+                    </div>
+                  </div>
 
-                      <div className="grid grid-cols-2 gap-1.5 text-xs">
-                        <div className="bg-[#a8c7fa]/5 px-2 py-1.5 rounded-lg">
-                          <span className="block text-[#a8c7fa]/60 mb-0.5">
-                            Mission
-                          </span>
-                          <p className="text-white font-medium truncate">
-                            {nft.missionAmount}
-                          </p>
-                        </div>
-                        <div className="bg-[#a8c7fa]/5 px-2 py-1.5 rounded-lg">
-                          <span className="block text-[#a8c7fa]/60 mb-0.5">
-                            Expires
-                          </span>
-                          <p className="text-white font-medium truncate">
-                            {nft.expireDate}
-                          </p>
-                        </div>
+                  <div className="grid grid-cols-2 gap-1.5 text-xs">
+                    <div className="bg-[#a8c7fa]/5 px-2 py-1.5 rounded-lg">
+                      <span className="block text-[#a8c7fa]/60 mb-0.5">
+                        Mission
+                      </span>
+                      <p className="text-white font-medium truncate">
+                        {nft.missionAmount}
+                      </p>
+                    </div>
+                    <div className="bg-[#a8c7fa]/5 px-2 py-1.5 rounded-lg">
+                      <span className="block text-[#a8c7fa]/60 mb-0.5">
+                        Expires
+                      </span>
+                      <p className="text-white font-medium truncate">
+                        {nft.expireDate}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-1 p-3">
+            {nfts.map((nft) => (
+              <div
+                key={nft.id}
+                onClick={() => onSelect(nft)}
+                className={`flex items-center gap-2.5 border border-[#a8c7fa]/10 
+                p-2 rounded-xl hover:bg-[#a8c7fa]/5 transition-all duration-300 cursor-pointer
+                ${
+                  selectedNFTId === nft.id
+                    ? "ring-2 ring-[#7042f88b] bg-[#7042f88b]/5"
+                    : ""
+                }`}
+              >
+                <img
+                  src={nft.image}
+                  alt={nft.name}
+                  className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                />
+                <div className="flex-1 flex justify-between items-center min-w-0">
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="text-xs font-medium text-white truncate">
+                        {nft.name}
+                      </h3>
+                      <div
+                        className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap
+                      ${
+                        nft.status === "completed"
+                          ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                          : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                      }`}
+                      >
+                        {nft.status === "completed"
+                          ? "Completed"
+                          : "In Progress"}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 text-[10px]">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[#a8c7fa]/60">Mission:</span>
+                        <span className="text-white font-medium">
+                          {nft.missionAmount}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[#a8c7fa]/60">Expires:</span>
+                        <span className="text-white font-medium truncate">
+                          {nft.expireDate}
+                        </span>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-1 p-3">
-                {nfts.map((nft) => (
-                  <div
-                    key={nft.id}
-                    onClick={() => onSelect(nft)}
-                    className={`flex items-center gap-2.5 border border-[#a8c7fa]/10 
-                    p-2 rounded-xl hover:bg-[#a8c7fa]/5 transition-all duration-300 cursor-pointer
-                    ${
-                      selectedNFTId === nft.id
-                        ? "ring-2 ring-[#7042f88b] bg-[#7042f88b]/5"
-                        : ""
-                    }`}
-                  >
-                    <img
-                      src={nft.image}
-                      alt={nft.name}
-                      className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
-                    />
-                    <div className="flex-1 flex justify-between items-center min-w-0">
-                      <div className="space-y-0.5 min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <h3 className="text-xs font-medium text-white truncate">
-                            {nft.name}
-                          </h3>
-                          <div
-                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap
-                          ${
-                            nft.status === "completed"
-                              ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                              : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                          }`}
-                          >
-                            {nft.status === "completed"
-                              ? "Completed"
-                              : "In Progress"}
-                          </div>
-                        </div>
-                        <div className="flex gap-2 text-[10px]">
-                          <div className="flex items-center gap-1">
-                            <span className="text-[#a8c7fa]/60">Mission:</span>
-                            <span className="text-white font-medium">
-                              {nft.missionAmount}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-[#a8c7fa]/60">Expires:</span>
-                            <span className="text-white font-medium truncate">
-                              {nft.expireDate}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center ml-3">
-                        <svg
-                          className="w-4 h-4 text-[#a8c7fa]/40"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </div>
-                    </div>
+                  <div className="flex items-center ml-3">
+                    <svg
+                      className="w-4 h-4 text-[#a8c7fa]/40"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </div>
-                ))}
+                </div>
               </div>
-            )}
+            ))}
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-10"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
     </div>
   );
 };
