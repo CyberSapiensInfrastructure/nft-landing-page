@@ -23,7 +23,7 @@ const Footer = () => {
       </div>
 
       {/* Footer Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 ">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           {/* Left Section */}
           <div className="space-y-4">
@@ -117,7 +117,7 @@ const Footer = () => {
         </div>
 
         {/* Gradient Line */}
-        <div className="mt-8 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d8624b]/30 to-transparent" />
+        <div className="mt-4 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d8624b]/30 to-transparent" />
       </div>
     </footer>
   );

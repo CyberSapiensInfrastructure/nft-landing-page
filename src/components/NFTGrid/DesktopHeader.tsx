@@ -1,14 +1,12 @@
 import { ViewGridIcon, ViewListIcon } from './icons';
-import { FilterBar } from './FilterBar';
+import { cn } from './utils';
 
 interface DesktopHeaderProps {
   view: 'grid' | 'list';
   onViewChange: (view: 'grid' | 'list') => void;
   activeTab: 'all' | 'my';
   handleTabChange: (tab: 'all' | 'my') => void;
-  filters: any[];
-  filterSelected: number;
-  setFilterSelected: (id: number) => void;
+  className?: string;
 }
 
 export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ 
@@ -16,8 +14,12 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   onViewChange, 
   activeTab, 
   handleTabChange,
+  className
 }) => (
-  <div className="sticky top-0 z-10 hidden lg:block">
+  <header className={cn(
+    "h-16 bg-white border-b border-gray-200",
+    className
+  )}>
     {/* Top Bar with All/My NFTs and View Toggle */}
     <div className="flex items-center justify-between p-4">
       {/* All/My NFTs Toggle */}
@@ -64,5 +66,5 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
         </button>
       </div>
     </div>
-  </div>
+  </header>
 ); 
