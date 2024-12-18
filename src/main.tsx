@@ -1,5 +1,5 @@
 import ReactDOM from "react-dom/client";
-import "./assets/fonts/fontinit.css";
+import "./assets/fonts/fontinit.css";  // Font dosyasını geri ekleyelim
 import "./index.css";
 import { Provider } from "react-redux";
 import { store } from "./app/store";
@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import ShuffleLoader from "./components/Loader";
 import Layout from "./components/Layout";
+import NFTListPage from "./pages/NFTListPage";
 import { NFTDetail } from "./pages/NFTDetail";
 import { Error } from "./components/Error";
 import { createWeb3Modal, defaultConfig } from "@web3modal/ethers5/react";
@@ -28,6 +29,7 @@ const metadata = {
   url: "https://stake-vesting-panel.onrender.com/",
   icons: ["https://avatars.mywebsite.com/"],
 };
+
 const ethersConfig = defaultConfig({
   metadata,
   rpcUrl: mainnet.rpcUrl,
@@ -45,6 +47,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <Suspense fallback={<ShuffleLoader />}>
         <Routes>
           <Route path="/" element={<Layout />} />
+          <Route path="/list" element={<NFTListPage />} />
           <Route path="/nft/:id" element={<NFTDetail />} />
           <Route path="*" element={<Error />} />
         </Routes>

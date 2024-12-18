@@ -12,9 +12,13 @@ import ShuffleLoader from "./Loader";
 import Footer from "./Footer";
 import { NFTGrid, NFT } from "./NFTGrid";
 import nftImage from "../assets/img/nft.jpg";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import Header from "./Header";
+import Hero from './Hero';
+import Categories from './Categories';
+import TrendingNFTs from './TrendingNFTs';
+import { BottomSheet } from './BottomSheet';
 
 const BackgroundCompiler = React.lazy(
   () => import("../components/BackgroundCompiler")
@@ -75,151 +79,6 @@ export const DecoElements = React.memo(() => (
   </>
 ));
 
-// Bottom Sheet komponenti
-const BottomSheet: React.FC<{
-  selectedNFT: NFT | null;
-  isOpen: boolean;
-  onClose: () => void;
-}> = ({ selectedNFT, isOpen }) => {
-  return (
-    <motion.div
-      initial={{ y: "100%" }}
-      animate={{ y: isOpen ? 0 : "100%" }}
-      transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="fixed inset-x-0 bottom-0 z-50 lg:hidden"
-    >
-      <div className="bg-[#0c0c0c]/95 backdrop-blur-lg border-t border-[#a8c7fa]/10 rounded-t-3xl max-h-[80vh] overflow-y-auto">
-        {/* Handle Bar */}
-        <div className="sticky top-0 pt-3 pb-4 bg-[#0c0c0c]/95 backdrop-blur-lg">
-          <div className="w-12 h-1 bg-white/20 rounded-full mx-auto" />
-        </div>
-
-        {/* Content */}
-        <div className="px-6 pb-8">
-          {selectedNFT ? (
-            <div className="space-y-6">
-              {/* NFT Header */}
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-medium">NFT Details</h2>
-                <div
-                  className={`px-2 py-1 rounded-full text-sm font-medium 
-                  ${
-                    selectedNFT.status === "completed"
-                      ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                      : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                  }`}
-                >
-                  {selectedNFT.status === "completed"
-                    ? "Completed"
-                    : "In Progress"}
-                </div>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
-                  <div className="text-sm text-[#a8c7fa]/60 mb-1">
-                    Mission Amount
-                  </div>
-                  <div className="text-xl text-white">
-                    {selectedNFT.missionAmount}
-                  </div>
-                </div>
-                <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
-                  <div className="text-sm text-[#a8c7fa]/60 mb-1">
-                    Expires In
-                  </div>
-                  <div className="text-xl text-white">
-                    {selectedNFT.expireDate}
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                {!selectedNFT.status && (
-                  <button
-                    className="w-full px-6 py-4 bg-[#d8624b]/20 hover:bg-[#d8624b]/40 border border-[#d8624b]/30 
-                                   rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                    Mint NFT
-                  </button>
-                )}
-
-                {selectedNFT.status === "completed" && (
-                  <button
-                    className="w-full px-6 py-4 bg-[#7042f8]/20 hover:bg-[#7042f8]/40 border border-[#7042f8]/30 
-                                   rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                      />
-                    </svg>
-                    Transfer NFT
-                  </button>
-                )}
-
-                <Link
-                  to={`/nft/${selectedNFT.id}`}
-                  className="w-full px-6 py-4 bg-[#a8c7fa]/20 hover:bg-[#a8c7fa]/40 border border-[#a8c7fa]/30 
-                           rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                  View Full Details
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="py-12 text-center text-[#a8c7fa]/40">
-              <p>Select an NFT to view details</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
 const Layout: React.FC = () => {
   const { walletProvider } = useWeb3ModalProvider();
   const [walletAddress, setWalletAddress] = useState<string>("");
@@ -233,10 +92,49 @@ const Layout: React.FC = () => {
   const [myNFTs, setMyNFTs] = useState<NFT[]>([]);
   const [view, setView] = useState<"list" | "grid">("list");
 
+  // Filtreleme için yeni state'ler
+  const [filters, setFilters] = useState({
+    status: 'all', // all, completed, not_completed
+    category: 'all', // all, whitelist, airdrop, reborn, genesis
+    sortBy: 'newest' // newest, oldest, price_high_low, price_low_high
+  });
+
   // NFT koleksiyonunu filtreleme
   const displayedNFTs = useMemo(() => {
     return activeTab === "all" ? nftCollection : myNFTs;
   }, [activeTab, nftCollection, myNFTs]);
+
+  // Filtrelenmiş NFT'leri hesapla
+  const filteredNFTs = useMemo(() => {
+    let filtered = [...displayedNFTs];
+
+    // Status filtresi
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(nft => nft.status === filters.status);
+    }
+
+    // Category filtresi
+    if (filters.category !== 'all') {
+      filtered = filtered.filter(nft => nft.name.toLowerCase() === filters.category);
+    }
+
+    // Sıralama
+    switch (filters.sortBy) {
+      case 'oldest':
+        filtered.sort((a, b) => a.id - b.id);
+        break;
+      case 'price_high_low':
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case 'price_low_high':
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      default: // newest
+        filtered.sort((a, b) => b.id - a.id);
+    }
+
+    return filtered;
+  }, [displayedNFTs, filters]);
 
   useEffect(() => {
     const handleDisconnect = () => {
@@ -377,27 +275,85 @@ const Layout: React.FC = () => {
       <ShuffleLoader />
       <DecoElements />
       <Header />
+      
+      {/* Hero Section */}
+      <Hero />
+
+      {/* Categories */}
+      <Categories />
+
+      {/* Trending NFTs */}
+      <TrendingNFTs onSelectNFT={handleNFTSelect} />
+
       {/* Main Content */}
-      <div className="flex-1 pt-16">
-        <div className="container mx-auto flex flex-col lg:flex-row h-[calc(100vh-4rem-2rem)]">
-          {/* Sol Kolon - NFT Listesi */}
-          <div className="flex-1 h-full px-4 py-6">
-            <div className="h-full">
-              <NFTGrid
-                nfts={displayedNFTs}
-                isLoading={isLoading}
-                onSelect={handleNFTSelect}
-                selectedNFTId={selectedNFT?.id}
-                view={view}
-                onViewChange={setView}
-                onTabChange={(tab) => {
-                  setActiveTab(tab);
-                }}
-              />
+      <div className="container mx-auto px-4 py-12">
+        {/* Filtreler */}
+        <div className="lg:w-64 p-4">
+          <h2 className="text-2xl font-bold mb-6">Filters</h2>
+          <div className="space-y-8">
+            {/* Status Filter */}
+            <div>
+              <h3 className="text-sm font-medium mb-3">Status</h3>
+              <select
+                value={filters.status}
+                onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                className="w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-lg p-2"
+              >
+                <option value="all">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="not_completed">Not Completed</option>
+              </select>
+            </div>
+
+            {/* Category Filter */}
+            <div>
+              <h3 className="text-sm font-medium mb-3">Category</h3>
+              <select
+                value={filters.category}
+                onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                className="w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-lg p-2"
+              >
+                <option value="all">All Categories</option>
+                <option value="whitelist">Whitelist</option>
+                <option value="airdrop">Airdrop</option>
+                <option value="reborn">Reborn</option>
+                <option value="genesis">Genesis</option>
+              </select>
+            </div>
+
+            {/* Sort By */}
+            <div>
+              <h3 className="text-sm font-medium mb-3">Sort By</h3>
+              <select
+                value={filters.sortBy}
+                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                className="w-full bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-lg p-2"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="price_high_low">Price: High to Low</option>
+                <option value="price_low_high">Price: Low to High</option>
+              </select>
             </div>
           </div>
+        </div>
 
-          {/* Sağ Kolon - NFT Detayları (Desktop) */}
+        {/* NFT Grid ve Sağ Panel */}
+        <div className="flex-1 flex">
+          {/* NFT Grid */}
+          <div className={`flex-1 ${selectedNFT ? 'lg:pr-4' : ''}`}>
+            <NFTGrid
+              nfts={filteredNFTs}
+              isLoading={isLoading}
+              onSelect={handleNFTSelect}
+              selectedNFTId={selectedNFT?.id}
+              view={view}
+              onViewChange={setView}
+              onTabChange={setActiveTab}
+            />
+          </div>
+
+          {/* Sağ Panel - NFT Detayları (Desktop) */}
           {selectedNFT && (
             <div className="hidden lg:block w-[400px] border-l border-[#a8c7fa]/10">
               <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-[#a8c7fa]/10 scrollbar-track-transparent">
@@ -417,9 +373,7 @@ const Layout: React.FC = () => {
                           : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
                       }`}
                     >
-                      {selectedNFT.status === "completed"
-                        ? "Completed"
-                        : "In Progress"}
+                      {selectedNFT.status === "completed" ? "Completed" : "In Progress"}
                     </div>
                   </div>
 
@@ -464,44 +418,20 @@ const Layout: React.FC = () => {
                   {/* Action Buttons */}
                   <div className="space-y-3 mt-6">
                     {!selectedNFT.status && (
-                      <button
-                        className="w-full px-4 py-3 bg-[#d8624b]/20 hover:bg-[#d8624b]/40 border border-[#d8624b]/30 
-                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 4v16m8-8H4"
-                          />
+                      <button className="w-full px-4 py-3 bg-[#d8624b]/20 hover:bg-[#d8624b]/40 border border-[#d8624b]/30 
+                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
                         Mint NFT
                       </button>
                     )}
 
                     {selectedNFT.status === "completed" && (
-                      <button
-                        className="w-full px-4 py-3 bg-[#7042f8]/20 hover:bg-[#7042f8]/40 border border-[#7042f8]/30 
-                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                          />
+                      <button className="w-full px-4 py-3 bg-[#7042f8]/20 hover:bg-[#7042f8]/40 border border-[#7042f8]/30 
+                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                         </svg>
                         Transfer NFT
                       </button>
@@ -512,24 +442,9 @@ const Layout: React.FC = () => {
                       className="w-full px-4 py-3 bg-[#a8c7fa]/20 hover:bg-[#a8c7fa]/40 border border-[#a8c7fa]/30 
                         rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2"
                     >
-                      <svg
-                        className="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
                       View Full Details
                     </Link>
@@ -542,13 +457,32 @@ const Layout: React.FC = () => {
       </div>
 
       {/* Bottom Sheet (Mobile) */}
-      <div className="lg:hidden">
-        <BottomSheet
-          selectedNFT={selectedNFT}
-          isOpen={isBottomSheetOpen}
-          onClose={() => setIsBottomSheetOpen(false)}
-        />
-      </div>
+      <AnimatePresence>
+        {selectedNFT && (
+          <>
+            <BottomSheet
+              selectedNFT={selectedNFT}
+              isOpen={isBottomSheetOpen}
+              onClose={() => {
+                setIsBottomSheetOpen(false);
+                setSelectedNFT(null);
+              }}
+            />
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setIsBottomSheetOpen(false);
+                setSelectedNFT(null);
+              }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+            />
+          </>
+        )}
+      </AnimatePresence>
+
       <Footer />
       <StackedNotifications />
     </div>
