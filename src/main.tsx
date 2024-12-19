@@ -15,6 +15,7 @@ import Community from "./pages/Community";
 import About from "./pages/About";
 import { Error } from "./components/Error";
 import { createWeb3Modal, defaultConfig } from "@web3modal/ethers5/react";
+import AdminPage from "./pages/admin";
 
 
 const projectId = "25b13b447fae3f9ebc44a23731bf9842";
@@ -56,6 +57,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/community" element={<Community />} />
           <Route path="/about" element={<About />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<Error />} />
         </Routes>
       </Suspense>
