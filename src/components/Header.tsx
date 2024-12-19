@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useWeb3ModalAccount } from '@web3modal/ethers5/react';
 
-const MobileMenu: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+const MobileMenu: React.FC<{ isOpen: boolean; onClose: () => void }> = ({  onClose }) => {
   const location = useLocation();
   const { isConnected } = useWeb3ModalAccount();
   

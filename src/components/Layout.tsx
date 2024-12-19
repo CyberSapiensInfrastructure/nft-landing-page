@@ -13,7 +13,6 @@ import Footer from "./Footer";
 import { NFTGrid, NFT } from "./NFTGrid";
 import nftImage from "../assets/img/nft.jpg";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
 import Header from "./Header";
 import Hero from "./Hero";
 import Categories from "./Categories";

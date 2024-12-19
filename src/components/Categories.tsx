@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const Categories: React.FC = () => {
@@ -15,15 +15,6 @@ const Categories: React.FC = () => {
     { id: 'reborn', name: 'Reborn', icon: '✨' },
     { id: 'genesis', name: 'Genesis', icon: '🌟' }
   ];
-
-  const sortOptions = [
-    { value: 'newest', label: 'NEWEST FIRST' },
-    { value: 'oldest', label: 'OLDEST FIRST' },
-    { value: 'price_high_low', label: 'PRICE: HIGH TO LOW' },
-    { value: 'price_low_high', label: 'PRICE: LOW TO HIGH' }
-  ];
-
-  const statusOptions = ['ALL', 'COMPLETED', 'NOT COMPLETED'];
 
   return (
     <section className="py-16 relative">
