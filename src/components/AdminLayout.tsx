@@ -12,8 +12,9 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Ekran boyutunu kontrol et
+  // Ekran boyutunu ve zamanı kontrol et
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 1024);
@@ -24,9 +25,16 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
       }
     };
 
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+      clearInterval(timeInterval);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -44,6 +52,7 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'contract', label: 'Contract Actions', icon: '⚡' },
     { id: 'users', label: 'Users', icon: '👥' },
     { id: 'nfts', label: 'NFT Management', icon: '🖼️' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
@@ -52,33 +61,40 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
   return (
     <div className="min-h-screen bg-[#0F172A] flex font-['Poppins']">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E293B] shadow-lg">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E293B] shadow-lg backdrop-blur-lg bg-opacity-80">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-3">
-            <button
+            <motion.button
+              whileTap={{ scale: 0.95 }}
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-            </button>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+            </motion.button>
+            <motion.span 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"
+            >
               Providence
-            </span>
+            </motion.span>
           </div>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleLogout}
-            className="px-3 py-1 text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg"
+            className="px-3 py-1 text-sm bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-lg shadow-lg hover:shadow-indigo-500/25"
           >
             Logout
-          </button>
+          </motion.button>
         </div>
       </div>
 
       {/* Sidebar */}
       <AnimatePresence mode="wait">
-        {(isSidebarOpen) && (
+        {isSidebarOpen && (
           <>
             {/* Overlay for mobile */}
             {isMobile && (
@@ -87,7 +103,7 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsSidebarOpen(false)}
-                className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
               />
             )}
             
@@ -96,19 +112,36 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              className={`bg-[#1E293B] text-white w-[280px] fixed z-50 ${
+              className={`bg-[#1E293B]/95 backdrop-blur-xl text-white w-[280px] fixed z-50 ${
                 isMobile ? 'top-0 h-full' : 'top-0 h-screen'
-              }`}
+              } border-r border-white/10`}
             >
               <div className="p-6 hidden lg:block">
                 <motion.h2 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent"
+                  className="text-3xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"
                 >
                   Providence
                 </motion.h2>
                 <p className="text-gray-400 text-sm mt-1">Providence Admin</p>
+              </div>
+
+              <div className="px-6 py-3 hidden lg:block">
+                <div className="text-xs text-gray-400">
+                  {currentTime.toLocaleDateString('en-US', { 
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </div>
+                <div className="text-lg font-semibold text-white">
+                  {currentTime.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
               </div>
 
               <nav className={`mt-8 ${isMobile ? 'mt-16' : ''}`}>
@@ -121,10 +154,10 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
                     whileHover={{ x: 6 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleTabChange(item.id)}
-                    className={`flex items-center px-6 py-3 cursor-pointer transition-colors duration-200 ${
+                    className={`flex items-center px-6 py-3 cursor-pointer transition-all duration-200 ${
                       activeTab === item.id 
-                        ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-white border-r-4 border-purple-500' 
-                        : 'text-gray-400 hover:text-white hover:bg-[#2D3B52]'
+                        ? 'bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-white border-r-4 border-indigo-500' 
+                        : 'text-gray-400 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     <span className="text-xl mr-3">{item.icon}</span>
@@ -135,11 +168,22 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
 
               <motion.div 
                 whileHover={{ y: -2 }}
-                className="absolute bottom-0 w-full bg-[#1E293B] p-4 hidden lg:block"
+                className="absolute bottom-0 w-full bg-[#1E293B]/95 p-4 hidden lg:block border-t border-white/10"
               >
+                <div className="mb-4 px-2">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
+                      <span className="text-white font-bold">A</span>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-white">Admin User</div>
+                      <div className="text-xs text-gray-400">admin@providence.com</div>
+                    </div>
+                  </div>
+                </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full py-2 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity duration-200 font-medium"
+                  className="w-full py-2 px-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 font-medium"
                 >
                   Logout
                 </button>
@@ -159,26 +203,34 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
         transition={{ type: "spring", bounce: 0, duration: 0.4 }}
       >
         {/* Desktop Header */}
-        <header className="bg-[#1E293B] shadow-lg sticky top-0 z-10 hidden lg:block">
+        <header className="bg-[#1E293B]/95 backdrop-blur-xl shadow-lg sticky top-0 z-10 hidden lg:block border-b border-white/10">
           <div className="flex items-center justify-between px-6 py-4">
-            <motion.button
-              whileHover={{ rotate: 180 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="text-gray-400 hover:text-white"
-            >
-              <svg 
-                className="w-6 h-6" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-                style={{ transform: isSidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)' }}
+            <div className="flex items-center space-x-4">
+              <motion.button
+                whileHover={{ rotate: 180 }}
+                transition={{ duration: 0.3 }}
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="text-gray-400 hover:text-white transition-colors"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </motion.button>
+                <svg 
+                  className="w-6 h-6" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                  style={{ transform: isSidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)' }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </motion.button>
+              <div className="text-sm font-medium text-gray-400">
+                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+              </div>
+            </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-400">Welcome, Admin</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
+                <span className="text-white font-bold">A</span>
+              </div>
             </div>
           </div>
         </header>
@@ -192,7 +244,7 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="bg-[#1E293B] rounded-xl shadow-xl p-6"
+              className="bg-[#1E293B]/95 backdrop-blur-xl rounded-xl shadow-xl p-6 border border-white/10"
             >
               {children}
             </motion.div>
