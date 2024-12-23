@@ -55,6 +55,46 @@ interface NFTMetadata {
   uri: string;
 }
 
+// Add LoadingOverlay component
+const LoadingOverlay = ({ message }: { message: string }) => (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-white font-medium">{message}</p>
+      </div>
+    </div>
+  </div>
+);
+
+// Add Toast component
+const Toast = ({ message, type = 'success', onClose }: { message: string; type?: 'success' | 'error'; onClose: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 5000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`fixed bottom-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-up z-50`}>
+      {type === 'success' ? (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      ) : (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      )}
+      <p className="font-medium">{message}</p>
+      <button onClick={onClose} className="ml-2 hover:text-gray-200">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  );
+};
+
 export const NFTManagement = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [provider, setProvider] = useState<ethers.providers.Web3Provider | null>(null);
@@ -70,6 +110,8 @@ export const NFTManagement = () => {
   const [nftMetadata, setNftMetadata] = useState("");
   const [nftImage, setNftImage] = useState("");
   const [f8Contract, setF8Contract] = useState<F8 | null>(null);
+  const [loadingMessage, setLoadingMessage] = useState<string>("");
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   // Verify and switch to Fuji network
   const ensureFujiNetwork = async (provider: ethers.providers.Web3Provider) => {
@@ -172,40 +214,43 @@ export const NFTManagement = () => {
     }
   };
 
+  // Helper function to show toast
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+  };
+
   // Mint NFT
   const handleMint = async () => {
     if (!f8Contract || !mintAddress) return;
     
     try {
-      setIsLoading(true);
-
+      setLoadingMessage("Minting your NFT... Please wait");
+      
       // Validate the address
       try {
-        ethers.utils.getAddress(mintAddress); // Will throw if invalid address
+        ethers.utils.getAddress(mintAddress);
       } catch (err) {
         throw new Error("Invalid Ethereum address");
       }
       
-      // Call mint function with the specified address
       const tx = await f8Contract.mintF8(mintAddress, {
-        gasLimit: 500000 // Add explicit gas limit
+        gasLimit: 500000
       });
       
-      console.log("Mint transaction sent:", tx.hash);
+      showToast("Transaction sent! Waiting for confirmation...");
+      
       const receipt = await tx.wait(1);
       
       if (receipt.status) {
-        console.log("Mint successful:", tx.hash);
-        // Refresh total supply
         const totalSupply = await f8Contract.totalSupply();
         setNftInfo(prev => ({ ...prev, totalSupply: totalSupply.toString() }));
-        alert("NFT minted successfully!");
+        showToast("NFT minted successfully! 🎉");
       }
     } catch (error: any) {
       console.error("Failed to mint:", error);
-      alert(error.message || "Failed to mint NFT. Please try again.");
+      showToast(error.message || "Failed to mint NFT. Please try again.", 'error');
     } finally {
-      setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -246,9 +291,8 @@ export const NFTManagement = () => {
     if (!f8Contract || !userAddress) return;
 
     try {
-      setIsLoading(true);
+      setLoadingMessage("Fetching your NFTs... Please wait");
       const nftList = await f8Contract.getList(userAddress);
-      console.log("NFT List:", nftList);
       
       // Convert BigNumber array to string array
       const nftIds = nftList.map(id => id.toString());
@@ -300,11 +344,12 @@ export const NFTManagement = () => {
       const metadataList = await Promise.all(metadataPromises);
       console.log("All metadata:", metadataList);
       setNftMetadata(JSON.stringify(metadataList, null, 2));
+      showToast(`Successfully loaded ${nftList.length} NFTs!`);
     } catch (error: any) {
       console.error("Failed to get NFT list:", error);
-      alert("Failed to fetch NFT list: " + (error.message || "Unknown error"));
+      showToast(error.message || "Failed to fetch NFT list", 'error');
     } finally {
-      setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -406,7 +451,19 @@ export const NFTManagement = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 relative">
+      {/* Loading Overlay */}
+      {loadingMessage && <LoadingOverlay message={loadingMessage} />}
+      
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* Header Section */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white">NFT Management</h1>
@@ -485,11 +542,8 @@ export const NFTManagement = () => {
           >
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Minting...
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Minting...</span>
                   </div>
                 ) : "Mint NFT"}
               </button>
@@ -502,9 +556,16 @@ export const NFTManagement = () => {
             <div className="space-y-3">
               <button
                 onClick={getMyNFTs}
-                className="w-full py-2 px-4 rounded-lg font-medium bg-indigo-500 hover:bg-indigo-600 transition-colors"
+                disabled={isLoading}
+                className={`w-full py-2 px-4 rounded-lg font-medium transition-colors
+                          ${isLoading ? "bg-indigo-500/50 cursor-not-allowed" : "bg-indigo-500 hover:bg-indigo-600"}`}
               >
-                View My NFTs
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Loading NFTs...</span>
+                  </div>
+                ) : "View My NFTs"}
               </button>
               <button
                 onClick={async () => {
