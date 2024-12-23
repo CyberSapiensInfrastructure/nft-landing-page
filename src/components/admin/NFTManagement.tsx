@@ -1,21 +1,23 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
+import { F8__factory } from "typechain-types/factories/F8__factory";
+import { F8 } from "typechain-types/F8";
 
 // Add type declarations for Core Wallet and MetaMask
 declare global {
+  interface EthereumProvider {
+    request: (args: { method: string; params?: any[] }) => Promise<any>;
+    on: (eventName: string, handler: (...args: any[]) => void) => void;
+    removeListener: (eventName: string, handler: (...args: any[]) => void) => void;
+    isConnected: () => boolean;
+    selectedAddress: string | null;
+    chainId: string | null;
+    networkVersion: string | null;
+  }
+
   interface Window {
-    avalanche?: {
-      request: (args: { method: string; params?: any[] }) => Promise<any>;
-      on: (eventName: string, handler: (...args: any[]) => void) => void;
-      removeListener: (eventName: string, handler: (...args: any[]) => void) => void;
-      isConnected: () => boolean;
-    };
-    ethereum?: {
-      request: (args: { method: string; params?: any[] }) => Promise<any>;
-      on: (eventName: string, handler: (...args: any[]) => void) => void;
-      removeListener: (eventName: string, handler: (...args: any[]) => void) => void;
-      isConnected: () => boolean;
-    };
+    avalanche?: EthereumProvider;
+    ethereum?: EthereumProvider;
   }
 }
 
@@ -37,165 +39,21 @@ const FUJI_CHAIN_CONFIG = {
   blockExplorerUrls: ["https://testnet.snowtrace.io/"],
 };
 
-// ABIs
-const F8_ABI = [
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "name_",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "symbol_",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "baseUri_",
-        "type": "string"
-      },
-      {
-        "internalType": "address",
-        "name": "intfLP",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      }
-    ],
-    "name": "mintF8",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "symbol",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "name",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalSupply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "tokenURI",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "getList",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-] as const;
+// Add these type definitions at the top of the file with other interfaces
+interface NFTAttribute {
+  trait_type: string;
+  value: string | number;
+}
 
-const LAUNCH_ABI = [
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "buyToken",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      }
-    ],
-    "name": "buyTokenStatus",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-] as const;
+interface NFTMetadata {
+  tokenId: string;
+  name: string;
+  description: string;
+  image: string;
+  attributes: NFTAttribute[];
+  attributesText: string;
+  uri: string;
+}
 
 export const NFTManagement = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -211,6 +69,7 @@ export const NFTManagement = () => {
   const [tokenId, setTokenId] = useState("");
   const [nftMetadata, setNftMetadata] = useState("");
   const [nftImage, setNftImage] = useState("");
+  const [f8Contract, setF8Contract] = useState<F8 | null>(null);
 
   // Verify and switch to Fuji network
   const ensureFujiNetwork = async (provider: ethers.providers.Web3Provider) => {
@@ -244,9 +103,7 @@ export const NFTManagement = () => {
   // Connect wallet
   const connectWallet = async () => {
     try {
-      // Check if Core Wallet is available
       const isCoreAvailable = typeof window.avalanche !== 'undefined';
-      // Check if MetaMask is available
       const isMetaMaskAvailable = typeof window.ethereum !== 'undefined';
 
       if (!isCoreAvailable && !isMetaMaskAvailable) {
@@ -254,37 +111,18 @@ export const NFTManagement = () => {
         return;
       }
 
-      let web3Provider: ethers.providers.Web3Provider;
+      let provider: EthereumProvider;
       
       if (isCoreAvailable && window.avalanche) {
-        // Use Core Wallet with proper modal
-        try {
-          await window.avalanche.request({ method: 'eth_requestAccounts' });
-          web3Provider = new ethers.providers.Web3Provider(window.avalanche, {
-            chainId: parseInt(FUJI_CHAIN_ID, 16),
-            name: 'Avalanche Fuji Testnet',
-            ensAddress: null // Disable ENS
-          });
-        } catch (err) {
-          console.error("User rejected Core Wallet connection");
-          return;
-        }
+        provider = window.avalanche;
       } else if (isMetaMaskAvailable && window.ethereum) {
-        // Use MetaMask
-        try {
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
-          web3Provider = new ethers.providers.Web3Provider(window.ethereum, {
-            chainId: parseInt(FUJI_CHAIN_ID, 16),
-            name: 'Avalanche Fuji Testnet',
-            ensAddress: null // Disable ENS
-          });
-        } catch (err) {
-          console.error("User rejected MetaMask connection");
-          return;
-        }
+        provider = window.ethereum;
       } else {
         throw new Error("No wallet provider found");
       }
+
+      await provider.request({ method: 'eth_requestAccounts' });
+      const web3Provider = new ethers.providers.Web3Provider(provider as any);
 
       // Ensure we're on Fuji network
       const isCorrectNetwork = await ensureFujiNetwork(web3Provider);
@@ -301,10 +139,10 @@ export const NFTManagement = () => {
       await getContractInfo(web3Provider, web3Signer);
 
       // Setup event listeners
-      web3Provider.on("accountsChanged", (accounts: string[]) => {
+      provider.on("accountsChanged", (accounts: string[]) => {
         setUserAddress(accounts[0]);
       });
-      web3Provider.on("chainChanged", () => {
+      provider.on("chainChanged", () => {
         window.location.reload();
       });
     } catch (error) {
@@ -316,14 +154,14 @@ export const NFTManagement = () => {
   // Get contract info
   const getContractInfo = async (provider: ethers.providers.Web3Provider, signer: ethers.Signer) => {
     try {
-      const f8Contract = new ethers.Contract(F8_ADDRESS, F8_ABI, signer);
+      const contract = F8__factory.connect(F8_ADDRESS, signer);
+      setF8Contract(contract);
       
       const [symbol, name, totalSupply] = await Promise.all([
-        f8Contract.symbol(),
-        f8Contract.name(),
-        f8Contract.totalSupply()
+        contract.symbol(),
+        contract.name(),
+        contract.totalSupply()
       ]);
-
       setNftInfo({
         symbol,
         name,
@@ -336,18 +174,11 @@ export const NFTManagement = () => {
 
   // Mint NFT
   const handleMint = async () => {
-    if (!signer || !mintAddress) return;
+    if (!f8Contract || !mintAddress) return;
     
     try {
       setIsLoading(true);
-      
-      // Create contract with signer
-      const f8Contract = new ethers.Contract(
-        F8_ADDRESS, 
-        F8_ABI, 
-        signer
-      );
-      
+
       // Validate the address
       try {
         ethers.utils.getAddress(mintAddress); // Will throw if invalid address
@@ -380,40 +211,25 @@ export const NFTManagement = () => {
 
   // Get NFT metadata
   const getNFTMetadata = async () => {
-    if (!signer || !tokenId) return;
+    if (!f8Contract || !tokenId) return;
 
     try {
       setIsLoading(true);
-      const f8Contract = new ethers.Contract(F8_ADDRESS, F8_ABI, signer);
       const tokenURI = await f8Contract.tokenURI(tokenId);
+      console.log("Original Token URI:", tokenURI);
       
-      // Log the URI for debugging
-      console.log("Token URI:", tokenURI);
+      // Create metadata object
+      const metadata = {
+        name: `F8 NFT #${tokenId}`,
+        description: "Providence NFT",
+        image: `http://cybersapiens.xyz/f8/img/${tokenId}.png`,
+        attributes: []
+      };
       
-      // Add CORS proxy if needed
-      const corsProxy = "https://cors-anywhere.herokuapp.com/";
-      const metadataUrl = `${corsProxy}${tokenURI}.json`;
-      
-      // Fetch metadata with proper headers
-      const response = await fetch(metadataUrl, {
-        headers: {
-          'Accept': 'application/json',
-          'Origin': window.location.origin
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const metadata = await response.json();
       console.log("Metadata:", metadata);
-      
       setNftMetadata(JSON.stringify(metadata, null, 2));
-      if (metadata.image) {
-        // Add CORS proxy to image URL if needed
-        setNftImage(`${corsProxy}${metadata.image}`);
-      }
+      setNftImage(metadata.image);
+      
     } catch (error: any) {
       console.error("Failed to get NFT metadata:", error);
       alert("Failed to fetch NFT metadata: " + (error.message || "Unknown error"));
@@ -422,46 +238,156 @@ export const NFTManagement = () => {
     }
   };
 
+  // Get all NFTs
+  const [allNFTs, setAllNFTs] = useState<string[]>([]);
+
   // Get user's NFTs
   const getMyNFTs = async () => {
-    if (!signer || !userAddress) return;
+    if (!f8Contract || !userAddress) return;
 
     try {
       setIsLoading(true);
-      const f8Contract = new ethers.Contract(F8_ADDRESS, F8_ABI, signer);
       const nftList = await f8Contract.getList(userAddress);
-      
       console.log("NFT List:", nftList);
       
-      // Get metadata for each NFT
-      const corsProxy = "https://cors-anywhere.herokuapp.com/";
-      const metadataPromises = nftList.map(async (tokenId: string) => {
-        const tokenURI = await f8Contract.tokenURI(tokenId);
-        console.log(`Token ${tokenId} URI:`, tokenURI);
+      // Convert BigNumber array to string array
+      const nftIds = nftList.map(id => id.toString());
+      setAllNFTs(nftIds);
+      
+      // Create metadata for each NFT
+      const metadataPromises = nftIds.map(async (id) => {
+        const tokenURI = await f8Contract.tokenURI(id);
+        console.log(`NFT ${id}:`, tokenURI);
         
-        const response = await fetch(`${corsProxy}${tokenURI}.json`, {
-          headers: {
-            'Accept': 'application/json',
-            'Origin': window.location.origin
+        try {
+          // Use a CORS proxy to fetch the metadata
+          const proxyUrl = 'https://api.allorigins.win/get?url=';
+          const response = await fetch(proxyUrl + encodeURIComponent(`${tokenURI}.json`));
+          const proxyData = await response.json();
+          const data = JSON.parse(proxyData.contents);
+          
+          // Format similar to f8.js
+          let attributesText = '';
+          if (data.attributes) {
+            attributesText = data.attributes
+              .map((attr: NFTAttribute) => `${attr.trait_type}: ${attr.value}`)
+              .join('\n');
           }
-        });
-        
-        if (!response.ok) {
-          console.error(`Failed to fetch metadata for token ${tokenId}`);
-          return null;
+
+          return {
+            tokenId: id,
+            name: `F8 NFT #${id}`,
+            description: data.description || "Providence NFT",
+            image: data.image || `http://cybersapiens.xyz/f8/img/${id}.png`,
+            attributes: data.attributes || [],
+            attributesText,
+            uri: tokenURI
+          };
+        } catch (error) {
+          console.error(`Error fetching metadata for token ${id}:`, error);
+          return {
+            tokenId: id,
+            name: `F8 NFT #${id}`,
+            description: "Providence NFT",
+            image: `http://cybersapiens.xyz/f8/img/${id}.png`,
+            attributes: [],
+            attributesText: '',
+            uri: tokenURI
+          };
         }
-        
-        return response.json();
       });
 
-      const allMetadata = (await Promise.all(metadataPromises)).filter(Boolean);
-      console.log("All metadata:", allMetadata);
-      setNftMetadata(JSON.stringify(allMetadata, null, 2));
+      const metadataList = await Promise.all(metadataPromises);
+      console.log("All metadata:", metadataList);
+      setNftMetadata(JSON.stringify(metadataList, null, 2));
     } catch (error: any) {
       console.error("Failed to get NFT list:", error);
       alert("Failed to fetch NFT list: " + (error.message || "Unknown error"));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Check mission status
+  const checkMissionStatus = async (missionId: string, tokenId: string) => {
+    if (!f8Contract || !userAddress) return;
+
+    try {
+      const status = await f8Contract.missionStatus(userAddress, missionId, tokenId);
+      return status;
+    } catch (error) {
+      console.error("Failed to check mission status:", error);
+      return false;
+    }
+  };
+
+  // Claim mission reward
+  const claimMissionReward = async (missionId: string, tokenId: string) => {
+    if (!f8Contract || !userAddress) return;
+
+    try {
+      setIsLoading(true);
+      const tx = await f8Contract.missionRewardClaim(missionId, tokenId, {
+        gasLimit: 500000
+      });
+      
+      console.log("Claim transaction sent:", tx.hash);
+      const receipt = await tx.wait(1);
+      
+      if (receipt.status) {
+        console.log("Reward claimed successfully:", tx.hash);
+        alert("Mission reward claimed successfully!");
+      }
+    } catch (error: any) {
+      console.error("Failed to claim reward:", error);
+      alert(error.message || "Failed to claim reward. Please try again.");
+    } finally {
+      setIsLoading(false);  
+    }
+  };
+
+  // View mission
+  const viewMission = async (missionId: string) => {
+    if (!f8Contract) return;
+
+    try {
+      const mission = await f8Contract.viewMission(missionId);
+      return {
+        name: mission.missionName,
+        amount: mission.missionAmount.toString(),
+        rebornAmount: mission.rebornAmount.toString(),
+        isComplete: mission.isComplete,
+        expiryDate: new Date(mission.expiryDate.toNumber() * 1000).toLocaleString()
+      };
+    } catch (error) {
+      console.error("Failed to view mission:", error);
+      return null;
+    }
+  };
+
+  // Get mission counter
+  const getMissionCounter = async () => {
+    if (!f8Contract) return;
+
+    try {
+      const counter = await f8Contract.getMissionCounter();
+      return counter.toString();
+    } catch (error) {
+      console.error("Failed to get mission counter:", error);
+      return "0";
+    }
+  };
+
+  // View deposit reward
+  const viewDepositReward = async () => {
+    if (!f8Contract) return;
+
+    try {
+      const reward = await f8Contract.viewDepositReward();
+      return ethers.utils.formatEther(reward);
+    } catch (error) {
+      console.error("Failed to view deposit reward:", error);
+      return "0";
     }
   };
 
@@ -480,107 +406,294 @@ export const NFTManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Wallet Connection */}
-      <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
-        <h2 className="text-xl font-bold text-white mb-4">Wallet Connection</h2>
-        {!userAddress ? (
-          <button
-            onClick={connectWallet}
-            className="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-lg font-medium text-white"
-          >
-            Connect Wallet
-          </button>
-        ) : (
-          <div className="space-y-4">
-            <div className="text-white">
-              <p>Connected Address: {userAddress}</p>
-              <p>Symbol: {nftInfo.symbol}</p>
-              <p>Name: {nftInfo.name}</p>
-              <p>Total Supply: {nftInfo.totalSupply}</p>
-            </div>
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-white">NFT Management</h1>
+      <div>
+          {!userAddress ? (
             <button
-              onClick={disconnectWallet}
-              className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg font-medium text-white"
+              onClick={connectWallet}
+              className="bg-purple-500 hover:bg-purple-600 px-6 py-2 rounded-lg font-medium text-white flex items-center gap-2"
             >
-              Disconnect Wallet
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Connect Wallet
             </button>
-          </div>
-        )}
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm text-gray-400">Connected Wallet</p>
+                <p className="text-white font-medium">{userAddress.slice(0, 6)}...{userAddress.slice(-4)}</p>
+              </div>
+              <button
+                onClick={disconnectWallet}
+                className="bg-red-500 hover:bg-red-600 p-2 rounded-lg text-white"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Mint NFT */}
+      {userAddress && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Contract Info Card */}
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+            <h2 className="text-lg font-semibold text-white mb-4">Contract Info</h2>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Symbol</span>
+                <span className="text-white font-medium">{nftInfo.symbol}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Name</span>
+                <span className="text-white font-medium">{nftInfo.name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Total Supply</span>
+                <span className="text-white font-medium">{nftInfo.totalSupply}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mint NFT Card */}
       <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
-        <h2 className="text-xl font-bold text-white mb-4">Mint NFT</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Mint NFT</h2>
         <div className="space-y-4">
-          <input
-            type="text"
-            value={mintAddress}
-            onChange={(e) => setMintAddress(e.target.value)}
-            placeholder="Enter address to mint to"
-            className="w-full p-2 rounded-lg bg-slate-700 text-white"
-          />
+              <div>
+                <label className="text-sm text-gray-400 mb-1 block">Recipient Address</label>
+                <input
+                  type="text"
+                  value={mintAddress}
+                  onChange={(e) => setMintAddress(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full p-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-purple-500 focus:outline-none"
+                />
+              </div>
           <button
             onClick={handleMint}
-            disabled={isLoading || !userAddress || !mintAddress}
+                disabled={isLoading || !mintAddress}
             className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-200
-                      ${isLoading || !userAddress || !mintAddress
+                          ${isLoading || !mintAddress
                           ? "bg-purple-500/50 cursor-not-allowed"
                           : "bg-purple-500 hover:bg-purple-600"}`}
           >
-            {isLoading ? "Minting..." : "Mint NFT"}
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Minting...
+                  </div>
+                ) : "Mint NFT"}
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Actions Card */}
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+            <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
+            <div className="space-y-3">
+              <button
+                onClick={getMyNFTs}
+                className="w-full py-2 px-4 rounded-lg font-medium bg-indigo-500 hover:bg-indigo-600 transition-colors"
+              >
+                View My NFTs
+              </button>
+              <button
+                onClick={async () => {
+                  const counter = await getMissionCounter();
+                  setNftMetadata(JSON.stringify({ missionCounter: counter }, null, 2));
+                }}
+                className="w-full py-2 px-4 rounded-lg font-medium bg-cyan-500 hover:bg-cyan-600 transition-colors"
+              >
+                View Mission Counter
+              </button>
+              <button
+                onClick={async () => {
+                  const reward = await viewDepositReward();
+                  setNftMetadata(JSON.stringify({ depositReward: reward + " AVAX" }, null, 2));
+                }}
+                className="w-full py-2 px-4 rounded-lg font-medium bg-emerald-500 hover:bg-emerald-600 transition-colors"
+              >
+                View Deposit Reward
           </button>
         </div>
       </div>
+        </div>
+      )}
 
-      {/* NFT Metadata */}
-      <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
-        <h2 className="text-xl font-bold text-white mb-4">NFT Information</h2>
-        <div className="space-y-4">
-          <input
-            type="text"
-            value={tokenId}
-            onChange={(e) => setTokenId(e.target.value)}
-            placeholder="Enter token ID"
-            className="w-full p-2 rounded-lg bg-slate-700 text-white"
-          />
-          <div className="flex space-x-4">
-            <button
-              onClick={getNFTMetadata}
-              disabled={isLoading || !userAddress}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200
-                        ${isLoading || !userAddress
-                            ? "bg-purple-500/50 cursor-not-allowed"
-                            : "bg-purple-500 hover:bg-purple-600"}`}
-            >
-              Get NFT Metadata
-            </button>
-            <button
-              onClick={getMyNFTs}
-              disabled={isLoading || !userAddress}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200
-                        ${isLoading || !userAddress
-                            ? "bg-purple-500/50 cursor-not-allowed"
-                            : "bg-purple-500 hover:bg-purple-600"}`}
-            >
-              Get My NFTs
-            </button>
+      {/* NFT List Section */}
+      {userAddress && nftMetadata && (
+        <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+          <h2 className="text-lg font-semibold text-white mb-4">My NFTs</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {JSON.parse(nftMetadata).map((nft: NFTMetadata) => (
+              <div key={nft.tokenId} className="bg-slate-700/50 rounded-lg overflow-hidden border border-slate-600 hover:border-purple-500 transition-all duration-200">
+                {/* NFT Image */}
+                <div className="aspect-square w-full relative">
+                  <img 
+                    src={nft.image} 
+                    alt={`NFT #${nft.tokenId}`} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                
+                {/* NFT Details */}
+                <div className="p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold text-white">NFT #{nft.tokenId}</h3>
+                    <span className="text-sm text-purple-400">F8 NFT</span>
+                  </div>
+                  
+                  <p className="text-gray-300 text-sm">{nft.description}</p>
+                  
+                  {/* Attributes */}
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-400">Attributes</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {nft.attributes.map((attr, index) => (
+                        <div 
+                          key={index} 
+                          className="bg-slate-600/50 rounded px-3 py-2 text-sm"
+                        >
+                          <div className="text-gray-400">{attr.trait_type}</div>
+                          <div className="text-white font-medium">{attr.value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Token URI */}
+                  <div className="pt-2 border-t border-slate-600">
+                    <a 
+                      href={`${nft.uri}.json`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                    >
+                      View Metadata →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Display Results */}
-      {(nftMetadata || nftImage) && (
+      {/* Mission Management */}
+      {userAddress && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Mission Status Card */}
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+            <h2 className="text-lg font-semibold text-white mb-4">Check Mission Status</h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-gray-400 mb-1 block">Mission ID</label>
+                  <input
+                    type="text"
+                    placeholder="Enter Mission ID"
+                    className="w-full p-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 mb-1 block">Token ID</label>
+                  <input
+                    type="text"
+                    placeholder="Enter Token ID"
+                    className="w-full p-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <button
+                  onClick={async () => {
+                    const missionId = document.querySelector<HTMLInputElement>('input[placeholder="Enter Mission ID"]')?.value;
+                    const tokenId = document.querySelector<HTMLInputElement>('input[placeholder="Enter Token ID"]')?.value;
+                    if (missionId && tokenId) {
+                      const status = await checkMissionStatus(missionId, tokenId);
+                      setNftMetadata(JSON.stringify({ missionStatus: status }, null, 2));
+                    }
+                  }}
+                  className="flex-1 py-2 px-4 rounded-lg font-medium bg-purple-500 hover:bg-purple-600 transition-colors"
+                >
+                  Check Status
+                </button>
+                <button
+                  onClick={async () => {
+                    const missionId = document.querySelector<HTMLInputElement>('input[placeholder="Enter Mission ID"]')?.value;
+                    const tokenId = document.querySelector<HTMLInputElement>('input[placeholder="Enter Token ID"]')?.value;
+                    if (missionId && tokenId) {
+                      await claimMissionReward(missionId, tokenId);
+                    }
+                  }}
+                  className="flex-1 py-2 px-4 rounded-lg font-medium bg-green-500 hover:bg-green-600 transition-colors"
+                >
+                  Claim Reward
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* View Mission Card */}
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+            <h2 className="text-lg font-semibold text-white mb-4">View Mission Details</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-400 mb-1 block">Mission ID</label>
+                <input
+                  type="text"
+                  placeholder="Enter Mission ID"
+                  onChange={(e) => {
+                    const missionId = e.target.value;
+                    if (missionId) {
+                      viewMission(missionId).then(mission => {
+                        if (mission) {
+                          setNftMetadata(JSON.stringify(mission, null, 2));
+                        }
+                      });
+                    }
+                  }}
+                  className="w-full p-2 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-purple-500 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Results Section */}
+      {userAddress && (nftMetadata || nftImage) && (
         <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
-          <h2 className="text-xl font-bold text-white mb-4">Results</h2>
-          {nftImage && (
-            <img src={nftImage} alt="NFT" className="max-w-sm mx-auto mb-4 rounded-lg" />
-          )}
-          {nftMetadata && (
-            <pre className="bg-slate-700 p-4 rounded-lg overflow-auto text-white">
-              {nftMetadata}
-            </pre>
-          )}
+          <h2 className="text-lg font-semibold text-white mb-4">Results</h2>
+          <div className="space-y-4">
+            {nftImage && (
+              <img src={nftImage} alt="NFT" className="max-w-sm mx-auto rounded-lg border border-slate-600" />
+            )}
+            {nftMetadata && (
+              <div>
+                <pre className="bg-slate-700 p-4 rounded-lg overflow-auto text-white border border-slate-600 whitespace-pre-wrap">
+                  {JSON.parse(nftMetadata).map((nft: any, index: number) => (
+                    `NFT #${nft.tokenId}
+URI: ${nft.uri}.json
+Description: ${nft.description}
+${nft.attributesText}
+______________________
+
+`
+                  ))}
+                </pre>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
