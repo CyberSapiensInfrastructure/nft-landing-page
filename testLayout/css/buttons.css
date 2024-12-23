@@ -1,0 +1,151 @@
+.buttonblue {
+    background-color: #008CBA;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 15px 32px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    width: 300px;
+    text-align: center;
+    cursor: pointer;
+}
+.buttonblue:hover {opacity: 0.8}
+
+.buttonbluebig {
+    background-color: #8dcff8;
+    border: none;
+    border-radius: 20px;
+    color: black;
+    padding: 15px 32px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    width: 300px;
+    text-align: left;
+    cursor: pointer;
+    font-weight: bold;
+    position: relative;
+}
+.buttonbluebig:hover {opacity: 0.8}
+
+.buttonbluebig .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    padding: 5px 10px;
+    border-radius: 50%;
+    background-color: red;
+    color: white;
+  }
+
+.buttongreen {
+    background-color: MediumSeaGreen;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 15px 32px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    width: 200px;
+    text-align: center;
+    cursor: pointer;
+}
+.buttongreen:hover {opacity: 0.8}  
+
+.buttongreenbig {
+    background-color: #58D68D;
+    border: none;
+    border-radius: 20px;
+    color: black;
+    padding: 15px 32px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    width: 300px;
+    text-align: left;
+    cursor: pointer;
+    font-weight: bold;
+    position: relative;
+}
+.buttongreenbig:hover {opacity: 0.8}
+
+.buttonorange {
+    background-color: #ff9800;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 22px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    width: 150px;
+    text-align: center;
+    cursor: pointer;
+}
+.buttonorange:hover {opacity: 0.8}  
+
+/* 250 px Button */
+.buttonopenblue {
+    background-color: #5DADE2;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 22px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    width: 250px;
+    text-align: center;
+    cursor: pointer;
+}
+.buttonopenblue:hover {opacity: 0.8}  
+
+.buttonopenred {
+    background-color: #E74C3C;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 22px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    width: 250px;
+    text-align: center;
+    cursor: pointer;
+}
+.buttonopenred:hover {opacity: 0.8} 
+
+.buttonopengreen {
+    background-color: #71f76d;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 22px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    width: 250px;
+    text-align: center;
+    cursor: pointer;
+}
+.buttonopengreen:hover {opacity: 0.8} 
+
+.buttonopenorange {
+    background-color: #e49439;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 22px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    width: 250px;
+    text-align: center;
+    cursor: pointer;
+}
+.buttonopenorange:hover {opacity: 0.8}  
+
+

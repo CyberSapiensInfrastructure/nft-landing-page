@@ -1,0 +1,279 @@
+<html>
+    <!-- google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Trirong">    
+    <!-- web3 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" type="application/javascript"></script>
+    <!-- jQuery -->
+    <script type="text/JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>    
+    <head>
+        <title>Providence NFT TestNet</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link rel="icon" type="image/png" href="/favicon.ico"/>        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">        
+        <link rel="stylesheet" href="css/tooltip.css">
+        <link rel="stylesheet" href="css/fontawesome.css">
+        <link rel="stylesheet" href="css/buttons.css">
+        <link rel="stylesheet" href="css/signup.css">
+        <link rel="stylesheet" href="css/alert.css">
+        <link rel="stylesheet" href="css/snackbar.css">
+        <link rel="stylesheet" href="css/footer.css">
+        <link rel="stylesheet" href="css/font.css">
+        <link rel="stylesheet" href="css/search.css">
+
+        <style>            
+            body { font-family: "Trirong", Arial, Helvetica, sans-serif; }
+            table {
+                font-family: "Trirong", Arial, Helvetica, sans-serif; 
+                border-collapse: collapse;
+            }
+            td, th {
+                border: 0px solid #dddddd;
+                padding: 5px;
+            }  
+
+            .loader {
+                border: 16px solid #f3f3f3;
+                border-radius: 50%;
+                border-top: 16px solid #3498db;
+                width: 120px;
+                height: 120px;
+                -webkit-animation: spin 2s linear infinite; /* Safari */
+                animation: spin 2s linear infinite;
+            }
+
+            /* Safari */
+            @-webkit-keyframes spin {
+                0% { -webkit-transform: rotate(0deg); }
+                100% { -webkit-transform: rotate(360deg); }
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+        </style>
+    </head>
+    <body>
+        <table style="width: 100%; height: 10%">
+            <tr>
+                <td style="width: 30%;">
+                    <div>
+                        <table style="width: 100%; height: 50%;">
+                            <p class="font_standart_title"><b>F8 NFT</b></p> 
+                            <p class="font_standart"><b>Test Page & Web3 Integration</b></p> 
+                        </table>
+                    </div>
+                </td>
+
+                <td style="width: 10%;">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="text-align: center;">
+                                <div id="loader" class="loader"></div>                    
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">
+                                <p class="font_standart" id="nft_symbol"></p>
+                            </td>
+                        </tr>                            
+                        <tr>
+                            <td style="text-align: center;">
+                                <p class="font_standart" id="nft_name"></p>
+                            </td>
+                        </tr>                            
+
+                    </table>
+                </td>
+                
+                <td style="width:  30%;">
+                    <div>
+                        <table style="width: 100%;">
+                            <tr>
+                                <td>
+                                    <p class="font_standart" id="status_label">Not Connected</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <button class="buttonblue tooltip" id="connect_wallet">Connect
+                                        <span class="tooltiptext">Connect Providence</span></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <p class="font_time" id="wallet_address"></p>
+                                </td>
+                            </tr>                            
+                        </table>
+                   </div> 
+                </td>
+            </tr>            
+        </table>
+
+        <table style="width: 100%; height: 90%">
+            <tr>
+                <td style="width: 19%;">
+                    <div>
+                        <table>
+                            <td style="text-align: center;">
+                                <textarea class="search" rows="35" cols="50" id="providence_info" readonly></textarea>
+                            </td>
+                        </table>
+                        <table style="width: 100%; height: 70%;">
+                            <p class="font_standart" id="time_line"><b>NFT List</b></p>
+                        </table>
+                    </div>
+                </td>
+
+                <td style="width: 27%;">
+                    <div>                       
+                        <table style="width: 100%;">
+                            <tr>
+                                <td><p class="font_standart"><b>You can Mint F8 NFT</b></p></td>
+                            </tr>                            
+                            <tr>
+                                <td style="text-align: center;">
+                                    <button class="buttonopenblue" id="token_mint">Mint</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="1" style="text-align: center;"> 
+                                    <input class="search" type="text" id="account_addr" placeholder="Account Address"><br>
+                                </td>
+                            </tr>                           
+                            <tr>
+                                <td><hr></td>
+                            </tr>  
+
+                            <tr>
+                                <td colspan="1" style="text-align: center;"> 
+                                    <input class="search" type="text" id="token_id" placeholder="Token ID"><br>
+                                </td>
+                            </tr>                           
+
+                            <tr>
+                                <td style="text-align: center;">
+                                    <button class="buttonopenred" id="token_uri">Token URI & Image</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align: center;">
+                                    <button class="buttonopenblue" id="my_token">My Providence NFTs</button>
+                                </td>
+                            </tr>
+
+                            <!-- Transfer 
+                            <tr>
+                                <td>
+                                    <p class="font_standart" id="account_error">Transfer Providence NFT</p>
+                                    <p class="font_standart" id="account_error"><i>Please Enter From and To Address</i></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <input class="wallet" type="text" id="from_addr" placeholder="From"><br>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <input class="wallet" type="text" id="to_addr" placeholder="To"><br>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <button class="buttonopenblue" id="transfer">Transfer</button>
+                                </td>
+                            </tr>
+                            -->
+
+                        </table>   
+                    </div>
+                </td>
+
+                <td style="width: 27%;">
+                    <div>
+                        <table style="width: 100%;">
+                            <tr>
+                                <td>
+                                    <p class="font_standart" id="nft_image"><b>Providence NFT Image</b></p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+
+                <td style="width: 27%;">
+                    <div>
+                        <table style="width: 100%;">
+                            <tr>
+                                <td>
+                                    <p class="font_standart" id="lbl_view_signature"><b>Insert Mission</b></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <input class="wallet" type="text" id="mission_name" placeholder="Mission Name"><br>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <input class="wallet" type="text" id="mission_amount" placeholder="Mission Amount"><br>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <input class="wallet" type="text" id="reborn_amount" placeholder="Reborn Amount"><br>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <input class="wallet" type="text" id="expiry_date" placeholder="Expiry Date"><br>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align: center;">
+                                    <button class="buttonopenblue" id="insert_mission">Insert Mission</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td><hr></td>
+                            </tr>  
+
+                            <tr>
+                                <td style="text-align: center;">
+                                    <input class="wallet" type="text" id="mission_id" placeholder="Mission Id"><br>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <button class="buttonopenred" id="exec_signature">View Mission</button>
+                                </td>
+                            </tr>
+
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        
+        <!-- Alert's -->
+        <div class="alert" id="alerterror">
+            <span class="alertclosebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+            <strong>Account Error!</strong> Error
+        </div>         
+        <div class="alert info" id="alertinfo">
+           <span class="alertclosebtn" onclick="this.parentElement.style.display='none';">&times;</span>  
+            <strong>Account Info!</strong> Welcome to Providence NFT.
+        </div>        
+        
+        <!-- SnackBar -->
+        <div id="snackbar"></div>  
+    </body>
+    <script type="text/javascript" src="./js/f8.js"></script>
+</html>

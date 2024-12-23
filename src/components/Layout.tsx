@@ -19,6 +19,7 @@ import Categories from "./Categories";
 import TrendingNFTs from "./TrendingNFTs";
 import { BottomSheet } from "./BottomSheet";
 import { useScrollToTop } from "../hooks/useScrollToTop";
+import { testConnection, testWalletConnection } from '../main';
 
 const BackgroundCompiler = React.lazy(
   () => import("../components/BackgroundCompiler")
@@ -229,6 +230,20 @@ const Layout: React.FC = () => {
     });
   };
 
+  const handleTest = async () => {
+    // Test RPC connection
+    const isConnected = await testConnection();
+    if (isConnected) {
+      console.log("✅ RPC Bağlantısı başarılı!");
+    }
+    
+    // Test wallet connection
+    const isWalletConnected = await testWalletConnection();
+    if (isWalletConnected) {
+      console.log("✅ Cüzdan bağlantısı başarılı!");
+    }
+  };
+
   return (
     <div className="site-font lowercase w-full min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white flex flex-col font-orbitron relative">
       {/* Background Elements */}
@@ -242,6 +257,17 @@ const Layout: React.FC = () => {
 
       {/* Hero Section */}
       <Hero />
+
+      {/* Test Button */}
+      <div className="container mx-auto px-4 py-4">
+        <button
+          onClick={handleTest}
+          className="px-6 py-2.5 bg-[#7042f88b] hover:bg-[#7042f8] text-white rounded-xl 
+                   flex items-center gap-2 transition-all duration-300"
+        >
+          <span>🔗 Bağlantıyı Test Et</span>
+        </button>
+      </div>
 
       {/* Categories */}
       <Categories />

@@ -1,0 +1,11 @@
+.footer {
+    font-family: "Trirong", Arial, Helvetica, sans-serif; 
+    border-radius: 0px;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #f2f2f2;
+    color: black;
+    text-align: center;
+}

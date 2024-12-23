@@ -1,0 +1,11 @@
+{
+  "tokenid": 0,
+  "name": "F8 #0",
+  "description": "Providence F8",
+  "image": "https://providencewallet.com/f8/0.png",
+  "attributes": [
+    {"trait_type":"WhiteList","value":true},
+    {"trait_type":"Avax Airdrop","value":true},
+    {"trait_type":"Reborn","value":true}
+  ]
+}
