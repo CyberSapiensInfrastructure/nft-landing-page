@@ -53,7 +53,7 @@ export function AdminLayout({ children, onTabChange }: AdminLayoutProps) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'users', label: 'Users', icon: '👥' },
-    { id: 'nfts', label: 'NFT Management', icon: '🖼️' },
+    { id: 'nfts', label: 'nfts and missions', icon: '🖼️' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
 

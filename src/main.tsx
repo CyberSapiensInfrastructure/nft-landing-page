@@ -32,11 +32,11 @@ const LAUNCHPAD_ADDRESS = "0xC7A2880F40537bbe25C060282159BcCB46cD9537";
 const F8_ADDRESS = "0xeAF4c15D2f4c9563F3c6D5eCCf217BBAE2052063";
 
 const mainnet = {
-  chainId: 7888,
-  name: "PrvL1",
-  currency: "PrvL1",
-  explorerUrl: "http://37.27.176.234:3000/?network=Providence",
-  rpcUrl: "http://128.140.57.46:9650/ext/bc/VDSkkiU59Sg9wkMuRgifpP95KS2DbUNRNzvA4qDL9v6hHTXqo/rpc",
+  chainId: 43114,
+  name: "Avalanche",
+  currency: "AVAX",
+  explorerUrl: "https://subnets.avax.network/c-chain",
+  rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
 };
 
 const metadata = {
