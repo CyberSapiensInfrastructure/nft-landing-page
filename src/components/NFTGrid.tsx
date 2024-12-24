@@ -162,56 +162,59 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
       {/* Content Area */}
       <div className="w-full">
         {view === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4">
             {nfts.map((nft) => (
               <div
                 key={nft.id}
                 onClick={() => onSelect(nft)}
-                className={`relative group bg-[#0c0c0c]/50 backdrop-blur-md border border-[#a8c7fa]/10 rounded-xl p-3 
-                hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer z-[1]
-                ${
-                  selectedNFTId === nft.id ? "ring-2 ring-[#7042f88b]" : ""
-                }`}
+                className={`relative group bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-2xl overflow-hidden
+                hover:shadow-lg hover:shadow-[#7042f88b]/20 transition-all duration-300 hover:-translate-y-1 cursor-pointer
+                ${selectedNFTId === nft.id ? "ring-2 ring-[#7042f88b]" : ""}`}
               >
-                <img
-                  src={nft.image}
-                  alt={nft.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover rounded-lg"
-                />
-                <div className="mt-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-medium text-white truncate">
-                      {nft.name}
-                    </h3>
+                {/* Image Container */}
+                <div className="aspect-square relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
+                  <img
+                    src={nft.image}
+                    alt={nft.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute top-4 right-4 z-20">
                     <div
-                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap
-                    ${
-                      nft.status === "completed"
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-md
+                      ${nft.status === "completed"
                         ? "bg-green-500/20 text-green-400 border border-green-500/30"
                         : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                    }`}
+                      }`}
                     >
-                      {nft.status === "completed"
-                        ? "Completed"
-                        : "In Progress"}
+                      {nft.status === "completed" ? "Completed" : "In Progress"}
                     </div>
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-2 gap-1.5 text-xs">
-                    <div className="bg-[#a8c7fa]/5 px-2 py-1.5 rounded-lg">
-                      <span className="block text-[#a8c7fa]/60 mb-0.5">
+                {/* Content */}
+                <div className="p-5 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-1">
+                      {nft.name}
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-[#a8c7fa]/5 px-3 py-2.5 rounded-xl">
+                      <span className="block text-[#a8c7fa]/60 text-xs mb-1">
                         Mission
                       </span>
-                      <p className="text-white font-medium truncate">
+                      <p className="text-white font-medium text-sm">
                         {nft.missionAmount}
                       </p>
                     </div>
-                    <div className="bg-[#a8c7fa]/5 px-2 py-1.5 rounded-lg">
-                      <span className="block text-[#a8c7fa]/60 mb-0.5">
+                    <div className="bg-[#a8c7fa]/5 px-3 py-2.5 rounded-xl">
+                      <span className="block text-[#a8c7fa]/60 text-xs mb-1">
                         Expires
                       </span>
-                      <p className="text-white font-medium truncate">
+                      <p className="text-white font-medium text-sm truncate">
                         {nft.expireDate}
                       </p>
                     </div>
@@ -221,52 +224,48 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
             ))}
           </div>
         ) : (
-          <div className="space-y-1 p-3">
+          <div className="space-y-3 p-4">
             {nfts.map((nft) => (
               <div
                 key={nft.id}
                 onClick={() => onSelect(nft)}
-                className={`flex items-center gap-2.5 border border-[#a8c7fa]/10 
-                p-2 rounded-xl hover:bg-[#a8c7fa]/5 transition-all duration-300 cursor-pointer
-                ${
-                  selectedNFTId === nft.id
-                    ? "ring-2 ring-[#7042f88b] bg-[#7042f88b]/5"
-                    : ""
-                }`}
+                className={`flex items-center gap-4 bg-[#0c0c0c] border border-[#a8c7fa]/10 
+                p-4 rounded-xl hover:shadow-lg hover:shadow-[#7042f88b]/20 transition-all duration-300 cursor-pointer
+                ${selectedNFTId === nft.id ? "ring-2 ring-[#7042f88b] bg-[#7042f88b]/5" : ""}`}
               >
-                <img
-                  src={nft.image}
-                  alt={nft.name}
-                  loading="lazy"
-                  className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
-                />
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                  <img
+                    src={nft.image}
+                    alt={nft.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+
                 <div className="flex-1 flex justify-between items-center min-w-0">
-                  <div className="space-y-0.5 min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="text-xs font-medium text-white truncate">
+                  <div className="space-y-2 min-w-0 flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-base font-semibold text-white">
                         {nft.name}
                       </h3>
                       <div
-                        className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap
-                      ${
-                        nft.status === "completed"
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium
+                        ${nft.status === "completed"
                           ? "bg-green-500/20 text-green-400 border border-green-500/30"
                           : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                      }`}
+                        }`}
                       >
-                        {nft.status === "completed"
-                          ? "Completed"
-                          : "In Progress"}
+                        {nft.status === "completed" ? "Completed" : "In Progress"}
                       </div>
                     </div>
-                    <div className="flex gap-2 text-[10px]">
-                      <div className="flex items-center gap-1">
+                    <div className="flex gap-4 text-sm">
+                      <div className="flex items-center gap-2">
                         <span className="text-[#a8c7fa]/60">Mission:</span>
                         <span className="text-white font-medium">
                           {nft.missionAmount}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
                         <span className="text-[#a8c7fa]/60">Expires:</span>
                         <span className="text-white font-medium truncate">
                           {nft.expireDate}
@@ -275,9 +274,9 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center ml-3">
+                  <div className="flex items-center ml-4">
                     <svg
-                      className="w-4 h-4 text-[#a8c7fa]/40"
+                      className="w-5 h-5 text-[#a8c7fa]/40"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
