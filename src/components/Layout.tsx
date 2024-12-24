@@ -1,12 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch } from "react-redux";
-import { ethers, providers } from "ethers";
-import { useWeb3ModalProvider } from "@web3modal/ethers5/react";
-import {
-  resetProvider,
-  setProvider,
-  setSigner,
-} from "../app/slices/walletProvider";
+import { ethers } from "ethers";
+import { resetProvider, setProvider, setSigner } from "../app/slices/walletProvider";
 import StackedNotifications from "./Notification";
 import ShuffleLoader from "./Loader";
 import Footer from "./Footer";
@@ -19,7 +14,13 @@ import Categories from "./Categories";
 import TrendingNFTs from "./TrendingNFTs";
 import { BottomSheet } from "./BottomSheet";
 import { useScrollToTop } from "../hooks/useScrollToTop";
-import { testWalletConnection } from '../main';
+import { connectWallet } from '../main';
+
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 const BackgroundCompiler = React.lazy(
   () => import("../components/BackgroundCompiler")
@@ -40,8 +41,7 @@ export const DecoElements = () => (
 
 const Layout: React.FC = () => {
   useScrollToTop();
-  const { walletProvider } = useWeb3ModalProvider();
-  const [walletAddress, setWalletAddress] = useState<string>("");
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const dispatch = useDispatch();
   // NFT States
   const [selectedNFT, setSelectedNFT] = useState<NFT | null>(null);
@@ -101,47 +101,57 @@ const Layout: React.FC = () => {
     return filtered;
   }, [displayedNFTs, filters]);
 
-  useEffect(() => {
-    const handleDisconnect = () => {
-      dispatch(resetProvider());
-      setWalletAddress("");
-    };
+  const handleConnect = async (address: string) => {
+    setWalletAddress(address);
+    const wallet = await connectWallet();
+    if (wallet) {
+      dispatch(setProvider(wallet.provider));
+      dispatch(setSigner(wallet.signer));
+      localStorage.setItem('walletAddress', address);
+    }
+  };
 
-    if (walletProvider) {
-      const web3Provider = new ethers.providers.Web3Provider(
-        walletProvider as providers.ExternalProvider
-      );
-      dispatch(setProvider(web3Provider));
-      const signer = web3Provider.getSigner();
+  const handleDisconnect = () => {
+    dispatch(resetProvider());
+    setWalletAddress(null);
+    localStorage.removeItem('walletAddress');
+  };
+
+  // Check for saved wallet connection on mount
+  useEffect(() => {
+    const savedAddress = localStorage.getItem('walletAddress');
+    if (savedAddress && window.ethereum) {
+      handleConnect(savedAddress);
+    }
+  }, []);
+
+  // Handle wallet events
+  useEffect(() => {
+    if (typeof window.ethereum !== 'undefined' && walletAddress) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      dispatch(setProvider(provider));
+      const signer = provider.getSigner();
       dispatch(setSigner(signer));
 
-      if ("on" in walletProvider && "removeListener" in walletProvider) {
-        (walletProvider as any).on("disconnect", handleDisconnect);
-        return () => {
-          (walletProvider as any).removeListener(
-            "disconnect",
-            handleDisconnect
-          );
-        };
-      }
+      const handleAccountsChanged = (accounts: string[]) => {
+        if (accounts.length > 0) {
+          handleConnect(accounts[0]);
+        } else {
+          handleDisconnect();
+        }
+      };
+
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+      window.ethereum.on("disconnect", handleDisconnect);
+
+      return () => {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+        window.ethereum.removeListener("disconnect", handleDisconnect);
+      };
     } else {
       handleDisconnect();
     }
-  }, [walletProvider, dispatch]);
-
-  useEffect(() => {
-    const getAddress = async () => {
-      if (walletProvider) {
-        const web3Provider = new ethers.providers.Web3Provider(
-          walletProvider as providers.ExternalProvider
-        );
-        const signer = web3Provider.getSigner();
-        const address = await signer.getAddress();
-        setWalletAddress(address);
-      }
-    };
-    getAddress();
-  }, [walletProvider]);
+  }, [walletAddress, dispatch]);
 
   // Fetch NFT collection data
   useEffect(() => {
@@ -230,11 +240,6 @@ const Layout: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    // Initialize wallet connection
-    testWalletConnection();
-  }, []);
-
   return (
     <div className="site-font lowercase w-full min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white flex flex-col font-orbitron relative">
       {/* Background Elements */}
@@ -244,7 +249,7 @@ const Layout: React.FC = () => {
       <BackgroundCompiler />
       <ShuffleLoader />
       <DecoElements />
-      <Header />
+      <Header onConnect={handleConnect} onDisconnect={handleDisconnect} />
 
       {/* Hero Section */}
       <Hero />

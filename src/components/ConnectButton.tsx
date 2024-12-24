@@ -1,27 +1,70 @@
-import { useWeb3Modal, useWeb3ModalAccount, useWeb3ModalProvider } from "@web3modal/ethers5/react";
-import { ethers } from "ethers";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { connectWallet } from '../main';
+import WalletModal from './WalletModal';
+import { ethers } from 'ethers';
 
 interface ConnectButtonProps {
-  className?: string;
+  onConnect?: (address: string) => void;
+  onDisconnect?: () => void;
 }
 
-const ConnectButton: React.FC<ConnectButtonProps> = ({ className = "" }) => {
-  const { open } = useWeb3Modal();
-  const { isConnected, address } = useWeb3ModalAccount();
-  const { walletProvider } = useWeb3ModalProvider();
-  const [chainName, setChainName] = useState<string>("");
+const ConnectButton: React.FC<ConnectButtonProps> = ({ onConnect, onDisconnect }) => {
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [address, setAddress] = useState<string | null>(null);
+  const [balance, setBalance] = useState("0");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Check if wallet is already connected on mount
   useEffect(() => {
-    const getChainInfo = async () => {
-      if (walletProvider) {
-        const provider = new ethers.providers.Web3Provider(walletProvider);
-        const network = await provider.getNetwork();
-        setChainName(network.name);
+    const checkConnection = async () => {
+      const savedAddress = localStorage.getItem('walletAddress');
+      if (savedAddress && window.ethereum) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        try {
+          const accounts = await provider.listAccounts();
+          if (accounts.length > 0) {
+            const signer = provider.getSigner();
+            const address = await signer.getAddress();
+            const balance = await signer.getBalance();
+            setAddress(address);
+            setBalance(ethers.utils.formatEther(balance));
+            onConnect?.(address);
+            localStorage.setItem('walletAddress', address);
+          }
+        } catch (error) {
+          console.error("Failed to restore wallet connection:", error);
+          localStorage.removeItem('walletAddress');
+        }
       }
     };
-    getChainInfo();
-  }, [walletProvider]);
+    checkConnection();
+  }, []);
+
+  const handleConnect = async () => {
+    setIsConnecting(true);
+    try {
+      const wallet = await connectWallet();
+      if (wallet) {
+        const balance = await wallet.provider.getBalance(wallet.address);
+        setAddress(wallet.address);
+        setBalance(ethers.utils.formatEther(balance));
+        onConnect?.(wallet.address);
+        localStorage.setItem('walletAddress', wallet.address);
+      }
+    } catch (error) {
+      console.error("Failed to connect wallet:", error);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const handleDisconnect = () => {
+    setAddress(null);
+    setBalance("0");
+    setIsModalOpen(false);
+    localStorage.removeItem('walletAddress');
+    onDisconnect?.();
+  };
 
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -29,36 +72,40 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ className = "" }) => {
 
   return (
     <>
-      {isConnected ? (
-        <div className={`flex items-center gap-3 ${className} `}>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#a8c7fa]/10">
-            <span className="w-2 h-2 rounded-full bg-green-500"></span>
-            <span className="text-sm text-[#a8c7fa]/60">{chainName}</span>
-          </div>
-          <button
-            onClick={() => open()}
-            className="flex items-center gap-2 px-4 py-2  hover:bg-[#0c0c0c]/80 
-                     border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50 rounded-xl transition-all duration-300"
-          >
-            <span className="text-sm">{formatAddress(address || "")}</span>
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => open()}
-          className={`inline-flex items-center justify-center gap-2 ${className}`}
-        >
-          <svg 
-            className="w-4 h-4" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          <span>connect</span>
-        </button>
-      )}
+      <button
+        onClick={address ? () => setIsModalOpen(true) : handleConnect}
+        disabled={isConnecting}
+        className="px-6 py-2 bg-[#7042f88b] hover:bg-[#7042f8] text-white rounded-xl 
+                  flex items-center gap-2 transition-all duration-300 disabled:opacity-50"
+      >
+        {isConnecting ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            Connecting...
+          </>
+        ) : address ? (
+          <>
+            <span className="w-2 h-2 bg-green-400 rounded-full" />
+            {formatAddress(address)}
+          </>
+        ) : (
+          <>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Connect Wallet
+          </>
+        )}
+      </button>
+
+      <WalletModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onDisconnect={handleDisconnect}
+        address={address}
+        balance={balance}
+      />
     </>
   );
 };

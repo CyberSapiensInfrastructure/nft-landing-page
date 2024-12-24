@@ -9,69 +9,37 @@ import { Suspense, lazy } from "react";
 import ShuffleLoader from "./components/Loader";
 import Layout from "./components/Layout";
 import { ethers } from 'ethers';
-import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5/react';
 
 // Contract addresses
 const F8_ADDRESS = "0x4684059c10Cc9b9E3013c953182E2e097B8d089d";
 
-// Web3Modal Configuration
-const projectId = "25b13b447fae3f9ebc44a23731bf9842";
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
-const mainnet = {
-  chainId: 43114,
-  name: "Avalanche",
-  currency: "AVAX",
-  explorerUrl: "https://subnets.avax.network/c-chain",
-  rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
-};
-
-const metadata = {
-  name: "PROVIDENCE",
-  description: "PROVIDENCE",
-  url: "https://providencewallet.com",
-  icons: ["https://providencewallet.com/carbon/logo/logo.jpg"],
-};
-
-createWeb3Modal({
-  ethersConfig: defaultConfig({ metadata }),
-  chains: [mainnet],
-  projectId,
-});
-
-// Test wallet connection
-export const testWalletConnection = async () => {
+// Custom wallet connection
+export const connectWallet = async () => {
   try {
     if (!window.ethereum) {
-      console.error("❌ MetaMask yüklü değil!");
-      return false;
+      alert("Please install MetaMask!");
+      return null;
     }
 
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    
-    // Check if already connected
-    const accounts = await provider.listAccounts();
-    if (accounts.length === 0) {
-      console.log("🔄 Cüzdan bağlantısı isteniyor...");
-      await provider.send('eth_requestAccounts', []);
-    }
-
+    await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
     const address = await signer.getAddress();
-    const balance = await signer.getBalance();
     
-    console.log('✅ Cüzdan Bağlandı:', {
-      address,
-      balance: ethers.utils.formatEther(balance)
-    });
-    
-    return true;
-  } catch (error: any) {
-    if (error.code === 4001) {
-      console.error("❌ Kullanıcı cüzdan bağlantısını reddetti!");
-    } else {
-      console.error("❌ Cüzdan bağlantı hatası:", error);
-    }
-    return false;
+    return {
+      provider,
+      signer,
+      address
+    };
+  } catch (error) {
+    console.error("Error connecting wallet:", error);
+    return null;
   }
 };
 
