@@ -1,5 +1,11 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { ethers } from 'ethers';
+
+interface SettingsProps {
+  provider: ethers.providers.Web3Provider | null;
+  account: string | null;
+}
 
 interface SettingSection {
   id: string;
@@ -14,7 +20,7 @@ interface SettingSection {
   }[];
 }
 
-export const Settings = () => {
+export const Settings: React.FC<SettingsProps> = () => {
   const [activeSection, setActiveSection] = useState('general');
 
   const settingSections: SettingSection[] = [

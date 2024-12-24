@@ -5,8 +5,7 @@ import { F8 } from "typechain-types/F8";
 import { FormInput } from "../common/FormInput";
 import { LoadingOverlay } from "../common/LoadingOverlay";
 import { Toast } from "../common/Toast";
-import { useWallet } from "../../hooks/useWallet";
-import { validateEthereumAddress, handleError } from "../../utils/validation";
+import { handleError } from "../../utils/validation";
 
 const F8_ADDRESS = '0x4684059c10Cc9b9E3013c953182E2e097B8d089d';
 
@@ -19,8 +18,12 @@ interface MissionData {
   expiryDate: BigNumber;
 }
 
-export const MissionManagement = () => {
-  const { signer, userAddress, connectWallet, disconnectWallet, isConnecting } = useWallet();
+interface MissionManagementProps {
+  provider: ethers.providers.Web3Provider | null;
+  account: string | null;
+}
+
+export const MissionManagement: React.FC<MissionManagementProps> = ({ provider, account }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [f8Contract, setF8Contract] = useState<F8 | null>(null);
@@ -32,15 +35,15 @@ export const MissionManagement = () => {
 
   // Initialize contract when signer is available
   useEffect(() => {
-    if (signer) {
-      const contract = F8__factory.connect(F8_ADDRESS, signer);
+    if (provider) {
+      const contract = F8__factory.connect(F8_ADDRESS, provider.getSigner());
       setF8Contract(contract);
     }
-  }, [signer]);
+  }, [provider]);
 
   // Get all missions
   const getMissions = async () => {
-    if (!f8Contract || !userAddress) return;
+    if (!f8Contract || !account) return;
 
     try {
       setIsLoading(true);
@@ -106,23 +109,23 @@ export const MissionManagement = () => {
 
   // Load missions when component mounts
   useEffect(() => {
-    if (userAddress && missions.length === 0) {
+    if (account && missions.length === 0) {
       getMissions();
     }
-  }, [userAddress]);
+  }, [account]);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header with Connect Wallet */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white">Mission Management</h1>
-        {!userAddress ? (
+        {!account ? (
           <button
-            onClick={connectWallet}
-            disabled={isConnecting}
+            onClick={() => {}}
+            disabled={isLoading}
             className="bg-purple-500 hover:bg-purple-600 px-6 py-2 rounded-lg font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isConnecting ? (
+            {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 Connecting...
@@ -140,10 +143,10 @@ export const MissionManagement = () => {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-sm text-gray-400">Connected Wallet</p>
-              <p className="text-white font-medium">{userAddress.slice(0, 6)}...{userAddress.slice(-4)}</p>
+              <p className="text-white font-medium">{account.slice(0, 6)}...{account.slice(-4)}</p>
             </div>
             <button
-              onClick={disconnectWallet}
+              onClick={() => {}}
               className="bg-red-500 hover:bg-red-600 p-2 rounded-lg text-white"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +158,7 @@ export const MissionManagement = () => {
       </div>
 
       {/* Tabs */}
-      {userAddress && (
+      {account && (
         <div className="border-b border-slate-700">
           <nav className="-mb-px flex gap-4">
             <button
@@ -190,7 +193,7 @@ export const MissionManagement = () => {
       )}
 
       {/* Mission List */}
-      {userAddress && activeTab === 'view' && (
+      {account && activeTab === 'view' && (
         <div className="bg-slate-800 rounded-xl p-6 space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold text-white">Available Missions</h2>
@@ -246,7 +249,7 @@ export const MissionManagement = () => {
       )}
 
       {/* Claim Rewards */}
-      {userAddress && activeTab === 'claim' && (
+      {account && activeTab === 'claim' && (
         <div className="bg-slate-800 rounded-xl p-6 space-y-6">
           <h2 className="text-xl font-semibold text-white">Claim Mission Rewards</h2>
           <div className="grid gap-6">

@@ -5,7 +5,6 @@ import { F8 } from "typechain-types/F8";
 import { FormInput } from "../common/FormInput";
 import { LoadingOverlay } from "../common/LoadingOverlay";
 import { Toast } from "../common/Toast";
-import { useWallet } from "../../hooks/useWallet";
 import { validateEthereumAddress, handleError } from "../../utils/validation";
 
 const F8_ADDRESS = '0x4684059c10Cc9b9E3013c953182E2e097B8d089d';
@@ -35,8 +34,12 @@ interface MissionData {
   canClaim?: boolean;
 }
 
-export const NFTManagement = () => {
-  const { signer, userAddress, connectWallet, disconnectWallet, isConnecting } = useWallet();
+interface NFTManagementProps {
+  provider: ethers.providers.Web3Provider | null;
+  account: string | null;
+}
+
+export const NFTManagement: React.FC<NFTManagementProps> = ({ provider, account }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [f8Contract, setF8Contract] = useState<F8 | null>(null);
@@ -52,13 +55,14 @@ export const NFTManagement = () => {
   const [tokenIdError, setTokenIdError] = useState("");
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
 
-  // Initialize contract when signer is available
+  // Initialize contract when provider is available
   useEffect(() => {
-    if (signer) {
+    if (provider) {
+      const signer = provider.getSigner();
       const contract = F8__factory.connect(F8_ADDRESS, signer);
       setF8Contract(contract);
     }
-  }, [signer]);
+  }, [provider]);
 
   // Handle minting NFT
   const handleMint = async () => {
@@ -102,13 +106,13 @@ export const NFTManagement = () => {
 
   // Get user's NFTs
   const getMyNFTs = async () => {
-    if (!f8Contract || !userAddress) return;
+    if (!f8Contract || !account) return;
 
     try {
       setIsLoading(true);
       setLoadingMessage("Fetching your NFTs...");
 
-      const tokenIds = await f8Contract.getList(userAddress);
+      const tokenIds = await f8Contract.getList(account);
 
       const metadataPromises = tokenIds.map(async (tokenId: BigNumber) => {
         const uri = await f8Contract.tokenURI(tokenId);
@@ -164,10 +168,10 @@ export const NFTManagement = () => {
 
   // Check if user can claim mission reward
   const checkMissionStatus = async (missionId: string, tokenId: string) => {
-    if (!f8Contract || !userAddress) return false;
+    if (!f8Contract || !account) return false;
 
     try {
-      const status = await f8Contract.missionStatus(userAddress, missionId, tokenId);
+      const status = await f8Contract.missionStatus(account, missionId, tokenId);
       return status;
     } catch (error) {
       console.error("Error checking mission status:", error);
@@ -213,7 +217,7 @@ export const NFTManagement = () => {
 
   // Get all missions with claim status
   const getMissions = async () => {
-    if (!f8Contract || !userAddress) return;
+    if (!f8Contract || !account) return;
 
     try {
       setIsLoading(true);
@@ -258,14 +262,14 @@ export const NFTManagement = () => {
 
   // Load data when tab changes
   useEffect(() => {
-    if (!userAddress) return;
+    if (!account) return;
 
     if (activeTab === 'list' && nftMetadata.length === 0) {
       getMyNFTs();
     } else if (activeTab === 'missions' && missions.length === 0) {
       getMissions();
     }
-  }, [activeTab, userAddress]);
+  }, [activeTab, account]);
 
   // Update missions when token ID changes
   useEffect(() => {
@@ -328,30 +332,17 @@ export const NFTManagement = () => {
       {/* Tab Content */}
       <div className="bg-slate-800 rounded-xl p-6">
         {/* Connect Wallet Button */}
-        {!userAddress ? (
+        {!account ? (
           <div className="text-center py-12">
             <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             <p className="mt-4 text-gray-400">Connect your wallet to access {activeTab === 'mint' ? 'minting' : activeTab === 'list' ? 'your NFTs' : 'missions'}</p>
             <button
-              onClick={connectWallet}
-              disabled={isConnecting}
+              onClick={() => {}}
               className="mt-4 bg-purple-500 hover:bg-purple-600 px-6 py-2 rounded-lg font-medium text-white inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isConnecting ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  Connect Wallet
-                </>
-              )}
+              Connect Wallet
             </button>
           </div>
         ) : (
@@ -361,10 +352,10 @@ export const NFTManagement = () => {
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <p className="text-sm text-gray-400">Connected Wallet</p>
-                  <p className="text-white font-medium">{userAddress.slice(0, 6)}...{userAddress.slice(-4)}</p>
+                  <p className="text-white font-medium">{account.slice(0, 6)}...{account.slice(-4)}</p>
                 </div>
                 <button
-                  onClick={disconnectWallet}
+                  onClick={() => {}}
                   className="bg-red-500 hover:bg-red-600 p-2 rounded-lg text-white"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

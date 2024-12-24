@@ -262,4 +262,6 @@ export const NFTDetail = () => {
       </motion.div>
     </AnimatePresence>
   );
-}; 
+};
+
+export default NFTDetail; 

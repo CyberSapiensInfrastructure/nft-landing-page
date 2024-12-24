@@ -1,5 +1,11 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { ethers } from 'ethers';
+
+interface UsersProps {
+  provider: ethers.providers.Web3Provider | null;
+  account: string | null;
+}
 
 interface User {
   id: string;
@@ -10,7 +16,7 @@ interface User {
   status: 'active' | 'inactive';
 }
 
-export const Users = () => {
+export const Users: React.FC<UsersProps> = () => {
   const [searchTerm, setSearchTerm] = useState('');
   
   const mockUsers: User[] = [

@@ -168,4 +168,6 @@ export const Error = () => {
       </motion.div>
     </AnimatePresence>
   );
-}; 
+};
+
+export default Error; 

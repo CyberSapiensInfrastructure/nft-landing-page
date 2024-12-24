@@ -176,7 +176,8 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
                 <img
                   src={nft.image}
                   alt={nft.name}
-                  className="w-full aspect-square object-cover rounded-lg"
+                  loading="lazy"
+                  className="w-full h-full object-cover rounded-lg"
                 />
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between">
@@ -236,6 +237,7 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
                 <img
                   src={nft.image}
                   alt={nft.name}
+                  loading="lazy"
                   className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
                 />
                 <div className="flex-1 flex justify-between items-center min-w-0">

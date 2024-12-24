@@ -1,10 +1,16 @@
 import { motion } from 'framer-motion';
+import { ethers } from 'ethers';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 
-export const Dashboard = () => {
+interface DashboardProps {
+  provider: ethers.providers.Web3Provider | null;
+  account: string | null;
+}
+
+export const Dashboard: React.FC<DashboardProps> = () => {
   const stats = [
     { title: 'Total Users', value: '150', icon: '👥', trend: '+12.5%' },
     { title: 'Active NFTs', value: '45', icon: '🖼️', trend: '+5.2%' },
