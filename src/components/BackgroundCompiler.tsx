@@ -1,7 +1,6 @@
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import desktopVideo from "../assets/img/providence-video-bg.webm";
 import mobileImage from "../assets/img/providence-hero-artwork.webp";
-import ShuffleLoader from "./Loader";
 
 const BackgroundCompiler: React.FC = () => {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
@@ -31,11 +30,9 @@ const BackgroundCompiler: React.FC = () => {
   );
 
   return (
-    <Suspense fallback={<ShuffleLoader />}>
-      <div className="absolute top-0 left-0 z-[-1] h-screen w-full">
-        {content}
-      </div>
-    </Suspense>
+    <div className="absolute top-0 left-0 z-[-1] h-screen w-full">
+      {content}
+    </div>
   );
 };
 

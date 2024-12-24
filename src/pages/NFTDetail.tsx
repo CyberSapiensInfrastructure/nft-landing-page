@@ -25,6 +25,11 @@ interface NFTMetadata {
   attributes: Array<{ trait_type: string; value: string | number }>;
 }
 
+interface Attribute {
+  trait_type: string;
+  value: string | number;
+}
+
 export const NFTDetail = () => {
   useScrollToTop();
   const { id } = useParams();
@@ -71,8 +76,8 @@ export const NFTDetail = () => {
           image: metadata.image || `http://cybersapiens.xyz/f8/img/${id}.png`,
           status: "completed",
           expireDate: "31.12.2024 - 23:59:59",
-          missionAmount: metadata.attributes?.find(attr => attr.trait_type === "Mission Amount")?.value as number || 0,
-          rarity: metadata.attributes?.find(attr => attr.trait_type === "Rarity")?.value as string || "Legendary",
+          missionAmount: metadata.attributes?.find((attr: Attribute) => attr.trait_type === "Mission Amount")?.value as number || 0,
+          rarity: metadata.attributes?.find((attr: Attribute) => attr.trait_type === "Rarity")?.value as string || "Legendary",
           creator: "Providence Labs",
           collection: "Genesis Collection",
           blockchain: "Avalanche",

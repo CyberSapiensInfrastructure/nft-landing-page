@@ -32,6 +32,8 @@ export const MissionManagement: React.FC<MissionManagementProps> = ({ provider, 
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [showToast, setShowToast] = useState(false);
   const [activeTab, setActiveTab] = useState<'view' | 'claim'>('view');
+  const [missionId, setMissionId] = useState("");
+  const [tokenId, setTokenId] = useState("");
 
   // Initialize contract when signer is available
   useEffect(() => {
@@ -255,21 +257,21 @@ export const MissionManagement: React.FC<MissionManagementProps> = ({ provider, 
           <div className="grid gap-6">
             <FormInput
               label="Mission ID"
-              value=""
-              onChange={() => {}}
+              value={missionId}
+              onChange={setMissionId}
               placeholder="Enter mission ID"
               helperText="Enter the ID of the mission you want to claim rewards for"
             />
             <FormInput
               label="Token ID"
-              value=""
-              onChange={() => {}}
+              value={tokenId}
+              onChange={setTokenId}
               placeholder="Enter token ID"
               helperText="Enter the ID of your NFT token"
             />
             <button
-              onClick={() => {}}
-              disabled={isLoading}
+              onClick={() => claimReward(missionId, tokenId)}
+              disabled={isLoading || !missionId || !tokenId}
               className="w-full bg-purple-500 hover:bg-purple-600 disabled:bg-purple-500/50 disabled:cursor-not-allowed px-6 py-2 rounded-lg font-medium text-white"
             >
               Claim Reward

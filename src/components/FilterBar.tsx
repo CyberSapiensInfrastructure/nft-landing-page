@@ -8,9 +8,10 @@ interface FilterBarProps {
     category: string;
     sortBy: string;
   };
-  setFilters: (filters: any) => void;
-  view: 'grid' | 'list';
-  setView: (view: 'grid' | 'list') => void;
+  setFilters: (filters: { status: string; category: string; sortBy: string; }) => void;
+  view: 'list' | 'grid';
+  setView: (view: 'list' | 'grid') => void;
+  isWalletConnected: boolean;
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({

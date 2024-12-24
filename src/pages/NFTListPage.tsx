@@ -11,10 +11,7 @@ import { F8 } from 'typechain-types/F8';
 import { F8__factory } from 'typechain-types/factories/F8__factory';
 import { ethers, BigNumber } from "ethers";
 
-interface NFTAttribute {
-  trait_type: string;
-  value: string;
-}
+
 
 const F8_ADDRESS = '0x4684059c10Cc9b9E3013c953182E2e097B8d089d';
 

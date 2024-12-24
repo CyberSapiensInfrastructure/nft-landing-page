@@ -103,6 +103,7 @@ const Home: React.FC = () => {
           selectedNFTId={selectedNFT?.id}
           view={view}
           onViewChange={setView}
+          onTabChange={() => {}}
         />
       </div>
 
