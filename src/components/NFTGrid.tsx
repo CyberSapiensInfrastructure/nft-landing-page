@@ -1,26 +1,28 @@
 import React, { useState } from "react";
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 
-export type NFT = {
+export interface NFT {
   id: number;
   name: string;
-  image: string;
   description?: string;
-  price: number;
+  image: string;
   status: "completed" | "not_completed";
+  price: number;
   expireDate: string;
   missionAmount: number;
-};
+  attributes?: Array<{
+    trait_type: string;
+    value: string | number;
+  }>;
+}
 
-interface NFTGridProps {
+export interface NFTGridProps {
   nfts: NFT[];
   isLoading: boolean;
   onSelect: (nft: NFT) => void;
   selectedNFTId?: number;
-  view: "grid" | "list";
-  onViewChange: (view: "grid" | "list") => void;
-  onTabChange?: (tab: "all" | "my") => void;
+  view: 'grid' | 'list';
+  onViewChange: (view: 'grid' | 'list') => void;
+  onTabChange: (tab: 'all' | 'my') => void;
 }
 
 export const NFTGrid: React.FC<NFTGridProps> = ({

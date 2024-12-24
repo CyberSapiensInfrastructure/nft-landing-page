@@ -1,32 +1,121 @@
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import nftImage from '../assets/img/nft.jpg';
 import { DecoElements } from '../components/Layout';
 import { useScrollToTop } from '../hooks/useScrollToTop';
+import { ethers, BigNumber } from 'ethers';
+import { F8__factory } from 'typechain-types/factories/F8__factory';
+
+const F8_ADDRESS = '0x4684059c10Cc9b9E3013c953182E2e097B8d089d';
+
+interface NFTMetadata {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  status: 'completed' | 'not_completed';
+  expireDate: string;
+  missionAmount: number;
+  rarity: string;
+  creator: string;
+  collection: string;
+  blockchain: string;
+  missions: Array<{ name: string; completed: boolean }>;
+  attributes: Array<{ trait_type: string; value: string | number }>;
+}
 
 export const NFTDetail = () => {
   useScrollToTop();
   const { id } = useParams();
+  const [nft, setNft] = useState<NFTMetadata | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
 
-  const nft = {
-    id: Number(id),
-    name: ["WHITELIST", "AIRDROP", "REBORN", "GENESIS"][Number(id) - 1],
-    image: nftImage,
-    status: Number(id) % 2 === 0 ? 'not_completed' : 'completed',
-    expireDate: "31.12.2024 - 23:59:59",
-    missionAmount: Number(id) - 1,
-    description: "This exclusive NFT grants you special access and privileges in the Providence ecosystem. Complete missions to unlock full potential.",
-    rarity: "Legendary",
-    creator: "Providence Labs",
-    collection: "Genesis Collection",
-    blockchain: "Avalanche",
-    missions: [
-      { name: "Join Discord", completed: true },
-      { name: "Follow Twitter", completed: true },
-      { name: "Share Announcement", completed: false },
-      { name: "Invite Friends", completed: false }
-    ]
-  };
+  // Check wallet connection
+  useEffect(() => {
+    const checkWallet = async () => {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        setIsWalletConnected(accounts.length > 0);
+      }
+    };
+    checkWallet();
+  }, []);
+
+  useEffect(() => {
+    const fetchNFTData = async () => {
+      if (!id || !window.ethereum) return;
+      if (!isWalletConnected) return;
+
+      try {
+        setIsLoading(true);
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const contract = F8__factory.connect(F8_ADDRESS, signer);
+
+        // Fetch token URI
+        const uri = await contract.tokenURI(BigNumber.from(id));
+        
+        // Fetch metadata
+        const proxyUrl = 'https://api.allorigins.win/get?url=';
+        const response = await fetch(proxyUrl + encodeURIComponent(`${uri}.json`));
+        const proxyData = await response.json();
+        const metadata = JSON.parse(proxyData.contents);
+
+        // Transform metadata to our format
+        const nftData: NFTMetadata = {
+          id: parseInt(id),
+          name: metadata.name || `F8 NFT #${id}`,
+          description: metadata.description || "Providence NFT",
+          image: metadata.image || `http://cybersapiens.xyz/f8/img/${id}.png`,
+          status: "completed",
+          expireDate: "31.12.2024 - 23:59:59",
+          missionAmount: metadata.attributes?.find(attr => attr.trait_type === "Mission Amount")?.value as number || 0,
+          rarity: metadata.attributes?.find(attr => attr.trait_type === "Rarity")?.value as string || "Legendary",
+          creator: "Providence Labs",
+          collection: "Genesis Collection",
+          blockchain: "Avalanche",
+          missions: [
+            { name: "Join Discord", completed: true },
+            { name: "Follow Twitter", completed: true },
+            { name: "Share Announcement", completed: false },
+            { name: "Invite Friends", completed: false }
+          ],
+          attributes: metadata.attributes || []
+        };
+
+        setNft(nftData);
+      } catch (error) {
+        console.error("Error fetching NFT data:", error);
+        // Fallback to mock data if fetch fails
+        setNft({
+          id: Number(id),
+          name: ["WHITELIST", "AIRDROP", "REBORN", "GENESIS"][Number(id) - 1],
+          image: nftImage,
+          status: Number(id) % 2 === 0 ? 'not_completed' : 'completed',
+          expireDate: "31.12.2024 - 23:59:59",
+          missionAmount: Number(id) - 1,
+          description: "This exclusive NFT grants you special access and privileges in the Providence ecosystem. Complete missions to unlock full potential.",
+          rarity: "Legendary",
+          creator: "Providence Labs",
+          collection: "Genesis Collection",
+          blockchain: "Avalanche",
+          missions: [
+            { name: "Join Discord", completed: true },
+            { name: "Follow Twitter", completed: true },
+            { name: "Share Announcement", completed: false },
+            { name: "Invite Friends", completed: false }
+          ],
+          attributes: []
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNFTData();
+  }, [id, isWalletConnected]);
 
   const containerVariants = {
     initial: { opacity: 0 },
@@ -63,6 +152,75 @@ export const NFTDetail = () => {
     }
   };
 
+  if (!window.ethereum) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white">
+        <div className="container mx-auto px-4 py-20">
+          <div className="max-w-lg mx-auto text-center space-y-6">
+            <div className="w-20 h-20 mx-auto mb-8">
+              <svg className="w-full h-full text-[#7042f88b]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10H9m3 4a9 9 0 110-18 9 9 0 010 18zm0 0v-4" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold">Wallet Not Found</h2>
+            <p className="text-[#a8c7fa]/60">Please install MetaMask or another Web3 wallet to view NFT details.</p>
+            <a
+              href="https://metamask.io/download/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-6 py-3 bg-[#7042f88b] hover:bg-[#7042f88b]/80 rounded-xl text-white transition-all duration-300"
+            >
+              Install MetaMask
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isWalletConnected) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white">
+        <div className="container mx-auto px-4 py-20">
+          <div className="max-w-lg mx-auto text-center space-y-6">
+            <div className="w-20 h-20 mx-auto mb-8">
+              <svg className="w-full h-full text-[#7042f88b]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25zm0 3.75h.008v3.75H12V12z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold">Wallet Not Connected</h2>
+            <p className="text-[#a8c7fa]/60">Please connect your wallet to view NFT details.</p>
+            <button
+              onClick={async () => {
+                try {
+                  await window.ethereum.request({ method: 'eth_requestAccounts' });
+                  const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                  setIsWalletConnected(accounts.length > 0);
+                } catch (error) {
+                  console.error('Error connecting wallet:', error);
+                }
+              }}
+              className="px-6 py-3 bg-[#7042f88b] hover:bg-[#7042f88b]/80 rounded-xl text-white transition-all duration-300 flex items-center gap-2 mx-auto"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              Connect Wallet
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading || !nft) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#7042f88b]"></div>
+      </div>
+    );
+  }
+
   return (
     <AnimatePresence mode="wait">
       <motion.div 
@@ -82,7 +240,7 @@ export const NFTDetail = () => {
             className="mb-8"
           >
             <Link 
-              to="/"
+              to="/list"
               className="inline-flex items-center gap-2 text-[#a8c7fa]/60 hover:text-[#a8c7fa] group"
             >
               <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">

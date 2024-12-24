@@ -35,6 +35,21 @@ export const Dashboard: React.FC<DashboardProps> = () => {
 
   const COLORS = ['#6366f1', '#ec4899', '#06b6d4'];
 
+
+  // Fuji Chain Configuration
+const FUJI_CHAIN_ID = "0xa869";
+const FUJI_CHAIN_CONFIG = {
+  chainId: FUJI_CHAIN_ID,
+  chainName: "Avalanche Fuji Testnet",
+  nativeCurrency: {
+    name: "AVAX",
+    symbol: "AVAX",
+    decimals: 18,
+  },
+  rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
+  blockExplorerUrls: ["https://testnet.snowtrace.io/"],
+};
+
   return (
     <div className="space-y-6">
       {/* Stats Grid */}

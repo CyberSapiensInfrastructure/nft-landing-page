@@ -6,28 +6,6 @@ import { Users } from '../components/admin/Users';
 import { NFTManagement } from '../components/admin/NFTManagement';
 import { Settings } from '../components/admin/Settings';
 
-// Add type declarations for Core Wallet and MetaMask
-declare global {
-  interface EthereumProvider {
-    request: (args: { method: string; params?: any[] }) => Promise<any>;
-    on: (eventName: string, handler: (...args: any[]) => void) => void;
-    removeListener: (eventName: string, handler: (...args: any[]) => void) => void;
-    isConnected: () => boolean;
-    selectedAddress: string | null;
-    chainId: string | null;
-    networkVersion: string | null;
-  }
-
-  interface Window {
-    avalanche?: EthereumProvider;
-    ethereum?: EthereumProvider;
-  }
-}
-
-// Contract addresses for Fuji testnet
-const F8_ADDRESS = '0x4684059c10Cc9b9E3013c953182E2e097B8d089d';
-const LAUNCH_ADDRESS = '0x5Da9f3af025808Ec69702Ee45cd315241432b2F6';
-
 // Fuji Chain Configuration
 const FUJI_CHAIN_ID = "0xa869";
 const FUJI_CHAIN_CONFIG = {

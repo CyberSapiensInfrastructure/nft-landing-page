@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
+
+declare global {
+  interface Window {
+    avalanche?: any;
+    ethereum?: any;
+  }
+}
 
 interface ConnectButtonProps {
   onConnect: (address: string) => void;
