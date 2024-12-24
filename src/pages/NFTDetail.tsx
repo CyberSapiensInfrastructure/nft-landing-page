@@ -233,7 +233,7 @@ export const NFTDetail = () => {
       >
         <DecoElements />
         
-        <div className="container mx-auto px-4 py-8 relative z-10">
+        <div className="container mx-auto px-4 py-8 mt-10 relative z-10">
           {/* Back Button */}
           <motion.div
             variants={itemVariants}

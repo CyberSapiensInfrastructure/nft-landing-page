@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import { store } from './app/store';
 import { ethers } from 'ethers';
 import Layout from './components/Layout';
+import { GlobalLoader } from './components/GlobalLoader';
 import './index.css';
 
 // Lazy loaded components
@@ -39,7 +40,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
       <BrowserRouter>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<GlobalLoader />}>
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />

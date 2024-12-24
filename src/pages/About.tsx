@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { PageTransition } from '../components/PageTransition';
+import { motion } from 'framer-motion';
 
 const features = [
   {
@@ -84,44 +86,77 @@ const features = [
 ];
 
 const About: React.FC = () => {
+  // Auto scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
-    <div className="min-h-screen py-20">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6">about providence</h1>
-          <p className="text-xl text-[#a8c7fa]/60 mb-12">
-            discover the future of digital collectibles with our unique nft ecosystem
-          </p>
+    <PageTransition>
+      <div className="min-h-screen py-20">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-4xl mx-auto"
+          >
+            <h1 className="text-4xl font-bold mb-6">about providence</h1>
+            <p className="text-xl text-[#a8c7fa]/60 mb-12">
+              discover the future of digital collectibles with our unique nft ecosystem
+            </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {features.map((feature) => (
-              <div
-                key={feature.id}
-                className="bg-[#0c0c0c]/50 backdrop-blur-sm rounded-xl border border-[#a8c7fa]/10 p-6 hover:border-[#7042f88b]/50 transition-all group"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-[#7042f88b]/20 rounded-xl text-[#7042f8] group-hover:bg-[#7042f88b]/30 transition-colors">
-                    {feature.icon}
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              variants={{
+                show: {
+                  transition: {
+                    staggerChildren: 0.1
+                  }
+                }
+              }}
+              initial="hidden"
+              animate="show"
+            >
+              {features.map((feature, index) => (
+                <motion.div
+                  key={feature.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    show: { opacity: 1, y: 0 }
+                  }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="bg-[#0c0c0c]/50 backdrop-blur-sm rounded-xl border border-[#a8c7fa]/10 p-6 hover:border-[#7042f88b]/50 transition-all group"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 bg-[#7042f88b]/20 rounded-xl text-[#7042f8] group-hover:bg-[#7042f88b]/30 transition-colors">
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-lg font-semibold">{feature.title}</h3>
                   </div>
-                  <h3 className="text-lg font-semibold">{feature.title}</h3>
-                </div>
-                <p className="text-[#a8c7fa]/60">{feature.description}</p>
-              </div>
-            ))}
-          </div>
+                  <p className="text-[#a8c7fa]/60">{feature.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
 
-          <div className="mt-12 bg-[#0c0c0c]/50 backdrop-blur-sm rounded-xl border border-[#a8c7fa]/10 p-8">
-            <h2 className="text-2xl font-bold mb-4">our mission</h2>
-            <p className="text-[#a8c7fa]/60 mb-6">
-              We are building a unique NFT ecosystem that combines digital collectibles with real utility. Our mission is to create a vibrant community of collectors and enthusiasts who can participate in various activities and earn rewards.
-            </p>
-            <p className="text-[#a8c7fa]/60">
-              Through our mission system, users can unlock special features and privileges by completing various tasks. This creates an engaging experience that goes beyond simple NFT ownership.
-            </p>
-          </div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="mt-12 bg-[#0c0c0c]/50 backdrop-blur-sm rounded-xl border border-[#a8c7fa]/10 p-8"
+            >
+              <h2 className="text-2xl font-bold mb-4">our mission</h2>
+              <p className="text-[#a8c7fa]/60 mb-6">
+                We are building a unique NFT ecosystem that combines digital collectibles with real utility. Our mission is to create a vibrant community of collectors and enthusiasts who can participate in various activities and earn rewards.
+              </p>
+              <p className="text-[#a8c7fa]/60">
+                Through our mission system, users can unlock special features and privileges by completing various tasks. This creates an engaging experience that goes beyond simple NFT ownership.
+              </p>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 };
 

@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { ethers } from "ethers";
+import { Outlet, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { resetProvider, setProvider, setSigner } from "../app/slices/walletProvider";
-import { Outlet } from 'react-router-dom';
+import { ScrollToTop } from './ScrollToTop';
+import { GlobalLoader } from './GlobalLoader';
 import Header from "./Header";
 import Footer from "./Footer";
 import { connectWallet } from '../main';
@@ -27,7 +30,9 @@ export const DecoElements = () => (
 );
 
 const Layout: React.FC = () => {
+  const location = useLocation();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
 
   const handleConnect = async (address: string) => {
@@ -46,12 +51,15 @@ const Layout: React.FC = () => {
     localStorage.removeItem('walletAddress');
   };
 
-  // Check for saved wallet connection on mount
+  // Check for saved wallet connection on mount and show initial loader
   useEffect(() => {
     const savedAddress = localStorage.getItem('walletAddress');
     if (savedAddress && window.ethereum) {
       handleConnect(savedAddress);
     }
+    // Show loader for at least 2 seconds
+    const timer = setTimeout(() => setIsLoading(false), 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Handle wallet events
@@ -83,24 +91,47 @@ const Layout: React.FC = () => {
   }, [walletAddress, dispatch]);
 
   return (
-    <div className="site-font lowercase w-full min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white flex flex-col font-orbitron relative">
-      {/* Background Elements */}
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.05] mix-blend-soft-light">
-        <div className="absolute inset-0 bg-noise animate-noise" />
-      </div>
-      <DecoElements />
-      
-      {/* Header */}
-      <Header onConnect={handleConnect} onDisconnect={handleDisconnect} />
-      
-      {/* Main Content */}
-      <main className="flex-1">
-        <Outlet />
-      </main>
+    <>
+      {/* Global Loader */}
+      <AnimatePresence>
+        {isLoading && <GlobalLoader />}
+      </AnimatePresence>
 
-      {/* Footer */}
-      <Footer />
-    </div>
+      {/* Scroll To Top Button */}
+      <ScrollToTop />
+
+      <div className="site-font lowercase w-full min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white flex flex-col font-orbitron relative">
+        {/* Background Elements */}
+        <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.05] mix-blend-soft-light">
+          <div className="absolute inset-0 bg-noise animate-noise" />
+        </div>
+        <DecoElements />
+        
+        {/* Header */}
+        <Header onConnect={handleConnect} onDisconnect={handleDisconnect} />
+        
+        {/* Main Content with Page Transitions */}
+        <main className="flex-1 relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{
+                duration: 0.3,
+                ease: "easeInOut"
+              }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+        </main>
+
+        {/* Footer */}
+        <Footer />
+      </div>
+    </>
   );
 };
 

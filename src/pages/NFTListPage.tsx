@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { NFTGrid } from '../components/NFTGrid';
 import { BottomSheet } from '../components/BottomSheet';
 import { FilterBar } from '../components/FilterBar';
+import { LoadingAnimation } from '../components/LoadingAnimation';
 import type { NFT } from '../components/NFTGrid';
 import nftImage from '../assets/img/nft.jpg';
 import { F8 } from 'typechain-types/F8';
@@ -24,6 +25,7 @@ const NFTListPage: React.FC = () => {
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [f8Contract, setF8Contract] = useState<F8 | null>(null);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
   
   // Get initial values from URL or use defaults
   const [view, setView] = useState<'list' | 'grid'>(
@@ -201,6 +203,9 @@ const NFTListPage: React.FC = () => {
   };
 
   const handleTabChange = (newTab: 'all' | 'my') => {
+    if (newTab === 'my' && !isWalletConnected) {
+      return; // Don't change tab if wallet is not connected
+    }
     setActiveTab(newTab);
   };
 
@@ -208,10 +213,40 @@ const NFTListPage: React.FC = () => {
     setFilters(newFilters);
   };
 
+  // Add wallet connection check
+  useEffect(() => {
+    const checkWalletConnection = async () => {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        setIsWalletConnected(accounts.length > 0);
+
+        // Listen for account changes
+        window.ethereum.on('accountsChanged', (accounts: string[]) => {
+          setIsWalletConnected(accounts.length > 0);
+          if (accounts.length === 0 && activeTab === 'my') {
+            setActiveTab('all');
+          }
+        });
+      }
+    };
+    checkWalletConnection();
+  }, []);
+
   return (
     <div className="min-h-screen py-20">
+      <AnimatePresence>
+        {isLoading && (
+          <LoadingAnimation message={loadingMessage || "Loading your NFTs..."} />
+        )}
+      </AnimatePresence>
+      
       <div className="container mx-auto px-4">
-        <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
           <h1 className="text-4xl font-bold mb-6">nft collection</h1>
           <FilterBar
             activeTab={activeTab}
@@ -220,20 +255,26 @@ const NFTListPage: React.FC = () => {
             setFilters={handleFiltersChange}
             view={view}
             setView={handleViewChange}
+            isWalletConnected={isWalletConnected}
           />
-        </div>
+        </motion.div>
 
-        <NFTGrid
-          nfts={filteredNFTs}
-          isLoading={isLoading}
-          onSelect={handleNFTSelect}
-          selectedNFTId={selectedNFT?.id}
-          view={view}
-          onViewChange={handleViewChange}
-          onTabChange={handleTabChange}
-        />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <NFTGrid
+            nfts={filteredNFTs}
+            isLoading={isLoading}
+            onSelect={handleNFTSelect}
+            selectedNFTId={selectedNFT?.id}
+            view={view}
+            onViewChange={handleViewChange}
+            onTabChange={handleTabChange}
+          />
+        </motion.div>
 
-        {/* NFT Detail Modal */}
         <AnimatePresence>
           {selectedNFT && (
             <BottomSheet

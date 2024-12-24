@@ -1,6 +1,9 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     extend: {
       fontFamily: {
@@ -14,6 +17,7 @@ module.exports = {
         fadeIn: "fadeIn 0.3s ease-out forwards",
         completedStep: "completedStep 0.5s ease-out",
         checkmark: "checkmark 0.5s ease-out",
+        noise: "noise 0.5s steps(10) infinite",
       },
       keyframes: {
         float: {
@@ -36,6 +40,18 @@ module.exports = {
           "50%": { transform: "scale(1.2)" },
           "100%": { transform: "scale(1)" },
         },
+        noise: {
+          "0%, 100%": { transform: "translate(0,0)" },
+          "10%": { transform: "translate(-5%,-5%)" },
+          "20%": { transform: "translate(-10%,5%)" },
+          "30%": { transform: "translate(5%,-10%)" },
+          "40%": { transform: "translate(-5%,15%)" },
+          "50%": { transform: "translate(-10%,5%)" },
+          "60%": { transform: "translate(15%,0)" },
+          "70%": { transform: "translate(0,10%)" },
+          "80%": { transform: "translate(-15%,0)" },
+          "90%": { transform: "translate(10%,5%)" },
+        },
       },
       colors: {
         primary: {
@@ -55,7 +71,10 @@ module.exports = {
         '3xl': '2rem',         // 32px
         '4xl': '2.25rem',      // 36px
       },
+      backgroundImage: {
+        'gradient-conic': 'conic-gradient(var(--tw-gradient-stops))',
+      },
     },
   },
   plugins: [],
-};
+}

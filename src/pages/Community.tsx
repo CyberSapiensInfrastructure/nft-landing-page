@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { PageTransition } from '../components/PageTransition';
 
 const communityLinks = [
   {
@@ -88,37 +90,65 @@ const communityLinks = [
 ];
 
 const Community: React.FC = () => {
-  return (
-    <div className="min-h-screen py-20">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6">join our community</h1>
-          <p className="text-xl text-[#a8c7fa]/60 mb-12">
-            connect with us on social media and join our growing community
-          </p>
+  // Auto scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {communityLinks.map((link) => (
-              <a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-[#0c0c0c]/50 backdrop-blur-sm rounded-xl border border-[#a8c7fa]/10 p-6 hover:border-[#7042f88b]/50 transition-all group"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-[#7042f88b]/20 rounded-xl text-[#7042f8] group-hover:bg-[#7042f88b]/30 transition-colors">
-                    {link.icon}
+  return (
+    <PageTransition>
+      <div className="min-h-screen py-20">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-4xl mx-auto"
+          >
+            <h1 className="text-4xl font-bold mb-6">join our community</h1>
+            <p className="text-xl text-[#a8c7fa]/60 mb-12">
+              connect with us on social media and join our growing community
+            </p>
+
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              variants={{
+                show: {
+                  transition: {
+                    staggerChildren: 0.1
+                  }
+                }
+              }}
+              initial="hidden"
+              animate="show"
+            >
+              {communityLinks.map((link, index) => (
+                <motion.a
+                  key={link.id}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    show: { opacity: 1, y: 0 }
+                  }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="bg-[#0c0c0c]/50 backdrop-blur-sm rounded-xl border border-[#a8c7fa]/10 p-6 hover:border-[#7042f88b]/50 transition-all group"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 bg-[#7042f88b]/20 rounded-xl text-[#7042f8] group-hover:bg-[#7042f88b]/30 transition-colors">
+                      {link.icon}
+                    </div>
+                    <h3 className="text-lg font-semibold">{link.name}</h3>
                   </div>
-                  <h3 className="text-lg font-semibold">{link.name}</h3>
-                </div>
-                <p className="text-[#a8c7fa]/60">{link.description}</p>
-              </a>
-            ))}
-          </div>
+                  <p className="text-[#a8c7fa]/60">{link.description}</p>
+                </motion.a>
+              ))}
+            </motion.div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 };
 
