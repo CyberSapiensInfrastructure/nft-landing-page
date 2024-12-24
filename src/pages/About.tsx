@@ -1,91 +1,126 @@
 import React from 'react';
-import { DecoElements } from '../components/Layout';
-import Footer from '../components/Footer';
-import Header from '../components/Header';
-import { motion } from 'framer-motion';
-import { useScrollToTop } from '../hooks/useScrollToTop';
+
+const features = [
+  {
+    id: 1,
+    title: 'Exclusive NFTs',
+    description: 'Access unique digital collectibles with special privileges.',
+    icon: (
+      <svg
+        className="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 2,
+    title: 'Mission System',
+    description: 'Complete missions to unlock rewards and special features.',
+    icon: (
+      <svg
+        className="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 3,
+    title: 'Community',
+    description: 'Join a vibrant community of collectors and enthusiasts.',
+    icon: (
+      <svg
+        className="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 4,
+    title: 'Rewards',
+    description: 'Earn rewards for participating in the ecosystem.',
+    icon: (
+      <svg
+        className="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    ),
+  },
+];
 
 const About: React.FC = () => {
-  useScrollToTop();
-  const features = [
-    {
-      title: 'unique nfts',
-      description: 'each nft in our collection is uniquely crafted with special attributes',
-      icon: '🎨'
-    },
-    {
-      title: 'community driven',
-      description: 'our community plays a vital role in shaping the future of providence',
-      icon: '🤝'
-    },
-    {
-      title: 'secure platform',
-      description: 'built on blockchain technology ensuring maximum security',
-      icon: '🔒'
-    },
-    {
-      title: 'regular updates',
-      description: 'constant improvements and new features based on community feedback',
-      icon: '🚀'
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black/60 via-[#0c0c0c] to-[#0f0514] text-white lowercase">
-      <DecoElements />
-      <Header />
-
-      <div className="container mx-auto px-4 pt-32 pb-16">
+    <div className="min-h-screen py-20">
+      <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">about providence</h1>
-            <p className="text-lg text-[#a8c7fa]/60">
-              providence is a next-generation nft platform built for collectors and creators
-            </p>
-          </motion.div>
+          <h1 className="text-4xl font-bold mb-6">about providence</h1>
+          <p className="text-xl text-[#a8c7fa]/60 mb-12">
+            discover the future of digital collectibles with our unique nft ecosystem
+          </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="p-6 rounded-2xl border border-[#a8c7fa]/10 bg-[#0c0c0c]/50 backdrop-blur-sm"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {features.map((feature) => (
+              <div
+                key={feature.id}
+                className="bg-[#0c0c0c]/50 backdrop-blur-sm rounded-xl border border-[#a8c7fa]/10 p-6 hover:border-[#7042f88b]/50 transition-all group"
               >
-                <span className="text-4xl mb-4 block">{feature.icon}</span>
-                <h3 className="text-xl font-medium mb-2">{feature.title}</h3>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-[#7042f88b]/20 rounded-xl text-[#7042f8] group-hover:bg-[#7042f88b]/30 transition-colors">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-lg font-semibold">{feature.title}</h3>
+                </div>
                 <p className="text-[#a8c7fa]/60">{feature.description}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="prose prose-invert max-w-none"
-          >
-            <h2 className="text-3xl font-bold mb-6">our vision</h2>
+          <div className="mt-12 bg-[#0c0c0c]/50 backdrop-blur-sm rounded-xl border border-[#a8c7fa]/10 p-8">
+            <h2 className="text-2xl font-bold mb-4">our mission</h2>
             <p className="text-[#a8c7fa]/60 mb-6">
-              providence aims to revolutionize the nft space by creating a seamless and engaging platform
-              for digital collectibles. our mission is to empower creators and collectors through
-              blockchain technology while building a sustainable and vibrant ecosystem.
+              We are building a unique NFT ecosystem that combines digital collectibles with real utility. Our mission is to create a vibrant community of collectors and enthusiasts who can participate in various activities and earn rewards.
             </p>
-            <div className="flex justify-center">
-              <button className="px-8 py-3 bg-[#7042f88b] hover:bg-[#7042f88b]/80 rounded-xl transition-all duration-300">
-                join our journey
-              </button>
-            </div>
-          </motion.div>
+            <p className="text-[#a8c7fa]/60">
+              Through our mission system, users can unlock special features and privileges by completing various tasks. This creates an engaging experience that goes beyond simple NFT ownership.
+            </p>
+          </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };

@@ -101,11 +101,36 @@ export const useWallet = () => {
   };
 
   // Disconnect wallet
-  const disconnectWallet = () => {
-    setProvider(null);
-    setSigner(null);
-    setUserAddress("");
-    setError("");
+  const disconnectWallet = async () => {
+    try {
+      const walletProvider = window.ethereum || window.avalanche;
+      if (walletProvider) {
+        // Remove event listeners
+        walletProvider.removeAllListeners('accountsChanged');
+        walletProvider.removeAllListeners('chainChanged');
+        walletProvider.removeAllListeners('disconnect');
+
+        // If using Core Wallet
+        if (window.avalanche) {
+          await window.avalanche.disconnect();
+        }
+      }
+      
+      // Clear state
+      setProvider(null);
+      setSigner(null);
+      setUserAddress("");
+      setError("");
+      
+      // Clear local storage
+      localStorage.removeItem('walletconnect');
+      localStorage.removeItem('WALLETCONNECT_DEEPLINK_CHOICE');
+      
+      // Force reload to clear any remaining state
+      window.location.reload();
+    } catch (error) {
+      console.error("Error disconnecting wallet:", error);
+    }
   };
 
   return {

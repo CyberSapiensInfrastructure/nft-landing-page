@@ -1,72 +1,59 @@
-import ReactDOM from "react-dom/client";
-import "./assets/fonts/fontinit.css";
-import "./index.css";
-import { Provider } from "react-redux";
-import { store } from "./app/store";
-import "./i18";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
-import ShuffleLoader from "./components/Loader";
-import Layout from "./components/Layout";
+import React, { Suspense, lazy } from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { store } from './app/store';
 import { ethers } from 'ethers';
+import Layout from './components/Layout';
+import './index.css';
 
-// Contract addresses
-const F8_ADDRESS = "0x4684059c10Cc9b9E3013c953182E2e097B8d089d";
+// Lazy loaded components
+const Home = lazy(() => import('./pages/Home'));
+const NFTListPage = lazy(() => import('./pages/NFTListPage'));
+const NFTDetail = lazy(() => import('./pages/NFTDetail'));
+const Marketplace = lazy(() => import('./pages/Marketplace'));
+const Community = lazy(() => import('./pages/Community'));
+const About = lazy(() => import('./pages/About'));
+const AdminPage = lazy(() => import('./pages/admin'));
+const Error = lazy(() => import('./components/Error'));
 
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
-
-// Custom wallet connection
+// Wallet connection function
 export const connectWallet = async () => {
-  try {
-    if (!window.ethereum) {
-      alert("Please install MetaMask!");
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      return { provider, signer };
+    } catch (error) {
+      console.error('User rejected connection:', error);
       return null;
     }
-
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    const signer = provider.getSigner();
-    const address = await signer.getAddress();
-    
-    return {
-      provider,
-      signer,
-      address
-    };
-  } catch (error) {
-    console.error("Error connecting wallet:", error);
+  } else {
+    console.error('Please install MetaMask!');
     return null;
   }
 };
 
-// Lazy load components
-const NFTListPage = lazy(() => import("./pages/NFTListPage"));
-const NFTDetail = lazy(() => import("./pages/NFTDetail"));
-const Marketplace = lazy(() => import("./pages/Marketplace"));
-const Community = lazy(() => import("./pages/Community"));
-const About = lazy(() => import("./pages/About"));
-const AdminPage = lazy(() => import("./pages/admin"));
-const Error = lazy(() => import("./components/Error"));
-
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <Provider store={store}>
-    <Router>
-      <Suspense fallback={<ShuffleLoader />}>
-        <Routes>
-          <Route path="/" element={<Layout />} />
-          <Route path="/list" element={<NFTListPage />} />
-          <Route path="/nft/:id" element={<NFTDetail />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="*" element={<Error />} />
-        </Routes>
-      </Suspense>
-    </Router>
-  </Provider>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <BrowserRouter>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="list" element={<NFTListPage />} />
+              <Route path="nft/:id" element={<NFTDetail />} />
+              <Route path="marketplace" element={<Marketplace />} />
+              <Route path="community" element={<Community />} />
+              <Route path="about" element={<About />} />
+              <Route path="*" element={<Error />} />
+            </Route>
+            <Route path="/admin" element={<AdminPage />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </Provider>
+  </React.StrictMode>
 );
