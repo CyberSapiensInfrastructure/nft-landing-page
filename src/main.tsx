@@ -15,7 +15,7 @@ const NFTDetail = lazy(() => import('./pages/NFTDetail'));
 const Marketplace = lazy(() => import('./pages/Marketplace'));
 const Community = lazy(() => import('./pages/Community'));
 const About = lazy(() => import('./pages/About'));
-const AdminPage = lazy(() => import('./pages/Admin'));
+const AdminPage = lazy(() => import('./pages/admin'));
 const Error = lazy(() => import('./components/Error'));
 
 // Wallet connection function
