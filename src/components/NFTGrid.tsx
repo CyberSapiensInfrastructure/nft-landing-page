@@ -46,18 +46,18 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
               <div
                 key={nft.id}
                 onClick={() => onSelect(nft)}
-                className={`relative group bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-2xl overflow-hidden
+                className={`relative bg-[#0c0c0c] border border-[#a8c7fa]/10 rounded-2xl overflow-hidden
                 hover:shadow-lg hover:shadow-[#7042f88b]/20 transition-all duration-300 hover:-translate-y-1 cursor-pointer
                 ${selectedNFTId === nft.id ? "ring-2 ring-[#7042f88b]" : ""}`}
               >
                 {/* Image Container */}
-                <div className="aspect-square relative overflow-hidden">
+                <div className={`aspect-square relative overflow-hidden group/nft-${nft.id}`}>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
                   <img
                     src={nft.image}
                     alt={nft.name}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className={`w-full h-full object-cover transition-transform duration-500 group-hover/nft-${nft.id}:scale-110`}
                   />
                   <div className="absolute top-4 right-4 z-20">
                     <div
@@ -76,7 +76,7 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
                 {/* Content */}
                 <div className="p-5 space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-1">
+                    <h3 className={`text-lg font-semibold text-white mb-1 transition-colors group-hover/nft-${nft.id}:text-purple-400`}>
                       {nft.name}
                     </h3>
                   </div>
@@ -117,19 +117,19 @@ export const NFTGrid: React.FC<NFTGridProps> = ({
                     : ""
                 }`}
               >
-                <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                <div className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 group/nft-${nft.id}`}>
                   <img
                     src={nft.image}
                     alt={nft.name}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className={`w-full h-full object-cover transition-transform duration-500 group-hover/nft-${nft.id}:scale-110`}
                   />
                 </div>
 
                 <div className="flex-1 flex justify-between items-center min-w-0">
                   <div className="space-y-2 min-w-0 flex-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-base font-semibold text-white">
+                      <h3 className={`text-base font-semibold text-white transition-colors group-hover/nft-${nft.id}:text-purple-400`}>
                         {nft.name}
                       </h3>
                       <div
