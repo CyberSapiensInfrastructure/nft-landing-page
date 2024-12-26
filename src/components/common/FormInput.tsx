@@ -1,12 +1,10 @@
 import React from 'react';
 
-interface FormInputProps {
+interface FormInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
   error?: string;
-  disabled?: boolean;
   helperText?: string;
   showValidation?: boolean;
 }
@@ -15,11 +13,11 @@ export const FormInput: React.FC<FormInputProps> = ({
   label,
   value,
   onChange,
-  placeholder,
   error,
-  disabled,
   helperText,
-  showValidation = true
+  showValidation = true,
+  className,
+  ...props
 }) => (
   <div className="space-y-1">
     <div className="flex justify-between items-center">
@@ -47,14 +45,13 @@ export const FormInput: React.FC<FormInputProps> = ({
     </div>
     <div className="relative">
       <input
-        type="text"
+        {...props}
+        type={props.type || "text"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        disabled={disabled}
         className={`w-full p-2 pl-3 pr-10 rounded-lg bg-slate-700 text-white border transition-colors
           ${error ? 'border-red-500 focus:border-red-600' : value && !error ? 'border-green-500 focus:border-green-600' : 'border-slate-600 focus:border-purple-500'}
-          focus:outline-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          focus:outline-none ${props.disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className || ''}`}
       />
       {value && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2">

@@ -34,6 +34,13 @@ interface MissionData {
   canClaim?: boolean;
 }
 
+interface NewMissionForm {
+  missionName: string;
+  missionAmount: string;
+  rebornAmount: string;
+  expiryDate: string;
+}
+
 interface NFTManagementProps {
   provider: ethers.providers.Web3Provider | null;
   account: string | null;
@@ -54,6 +61,20 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({ provider, account 
   const [selectedTokenId, setSelectedTokenId] = useState("");
   const [tokenIdError, setTokenIdError] = useState("");
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
+  const [showNewMissionForm, setShowNewMissionForm] = useState(false);
+  const [newMission, setNewMission] = useState<NewMissionForm>({
+    missionName: '',
+    missionAmount: '',
+    rebornAmount: '',
+    expiryDate: ''
+  });
+  const [editingMission, setEditingMission] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<NewMissionForm>({
+    missionName: '',
+    missionAmount: '',
+    rebornAmount: '',
+    expiryDate: ''
+  });
 
   // Initialize contract when provider is available
   useEffect(() => {
@@ -278,6 +299,123 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({ provider, account 
     }
   }, [selectedTokenId, activeTab]);
 
+  // Create new mission
+  const handleCreateMission = async () => {
+    if (!f8Contract) return;
+
+    try {
+      setIsLoading(true);
+      setLoadingMessage("Creating new mission...");
+
+      const missionAmount = ethers.utils.parseEther(newMission.missionAmount);
+      const rebornAmount = ethers.utils.parseEther(newMission.rebornAmount);
+      const expiryTimestamp = Math.floor(new Date(newMission.expiryDate).getTime() / 1000);
+
+      const gasEstimate = await f8Contract.estimateGas.insertMission(
+        newMission.missionName,
+        missionAmount,
+        rebornAmount,
+        expiryTimestamp
+      );
+
+      const tx = await f8Contract.insertMission(
+        newMission.missionName,
+        missionAmount,
+        rebornAmount,
+        expiryTimestamp,
+        {
+          gasLimit: Math.floor(gasEstimate.toNumber() * 1.2)
+        }
+      );
+
+      setLoadingMessage("Waiting for confirmation...");
+      await tx.wait();
+
+      setToastMessage("Mission created successfully!");
+      setToastType('success');
+      setShowToast(true);
+      setShowNewMissionForm(false);
+      setNewMission({
+        missionName: '',
+        missionAmount: '',
+        rebornAmount: '',
+        expiryDate: ''
+      });
+      getMissions();
+    } catch (error) {
+      const errorMessage = handleError(error);
+      setToastMessage(errorMessage);
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
+    }
+  };
+
+  // Update existing mission
+  const handleUpdateMission = async (missionId: string) => {
+    if (!f8Contract) return;
+
+    try {
+      setIsLoading(true);
+      setLoadingMessage("Updating mission...");
+
+      const missionAmount = ethers.utils.parseEther(editForm.missionAmount);
+      const rebornAmount = ethers.utils.parseEther(editForm.rebornAmount);
+      const expiryTimestamp = Math.floor(new Date(editForm.expiryDate).getTime() / 1000);
+
+      const gasEstimate = await f8Contract.estimateGas.updateMission(
+        missionId,
+        editForm.missionName,
+        missionAmount,
+        rebornAmount,
+        false, // isComplete
+        expiryTimestamp
+      );
+
+      const tx = await f8Contract.updateMission(
+        missionId,
+        editForm.missionName,
+        missionAmount,
+        rebornAmount,
+        false,
+        expiryTimestamp,
+        {
+          gasLimit: Math.floor(gasEstimate.toNumber() * 1.2)
+        }
+      );
+
+      setLoadingMessage("Waiting for confirmation...");
+      await tx.wait();
+
+      setToastMessage("Mission updated successfully!");
+      setToastType('success');
+      setShowToast(true);
+      setEditingMission(null);
+      getMissions();
+    } catch (error) {
+      const errorMessage = handleError(error);
+      setToastMessage(errorMessage);
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
+    }
+  };
+
+  // Start editing mission
+  const startEditingMission = (mission: MissionData) => {
+    setEditingMission(mission.missionId);
+    setEditForm({
+      missionName: mission.missionName,
+      missionAmount: ethers.utils.formatEther(mission.missionAmount),
+      rebornAmount: ethers.utils.formatEther(mission.rebornAmount),
+      expiryDate: new Date(mission.expiryDate.toNumber() * 1000).toISOString().split('T')[0]
+    });
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
@@ -476,93 +614,192 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({ provider, account 
             {activeTab === 'missions' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold text-white">Available Missions</h2>
-                  <button
-                    onClick={getMissions}
-                    disabled={isLoading}
-                    className="bg-purple-500 hover:bg-purple-600 disabled:bg-purple-500/50 disabled:cursor-not-allowed px-4 py-2 rounded-lg font-medium text-white text-sm"
-                  >
-                    Refresh
-                  </button>
+                  <h2 className="text-xl font-semibold text-white">Mission Management</h2>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setShowNewMissionForm(!showNewMissionForm)}
+                      className="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-lg font-medium text-white text-sm inline-flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      {showNewMissionForm ? 'Cancel' : 'New Mission'}
+                    </button>
+                    <button
+                      onClick={getMissions}
+                      disabled={isLoading}
+                      className="bg-slate-600 hover:bg-slate-700 px-4 py-2 rounded-lg font-medium text-white text-sm inline-flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Refresh
+                    </button>
+                  </div>
                 </div>
 
-                <div className="bg-slate-700/50 rounded-lg p-4">
-                  <FormInput
-                    label="NFT Token ID"
-                    value={selectedTokenId}
-                    onChange={(value) => {
-                      setSelectedTokenId(value);
-                      setTokenIdError("");
-                    }}
-                    error={tokenIdError}
-                    placeholder="Enter your NFT token ID"
-                    helperText="Enter the token ID to check mission eligibility"
-                  />
+                {/* New Mission Form */}
+                {showNewMissionForm && (
+                  <div className="bg-slate-700/50 rounded-lg p-6 border border-purple-500/50">
+                    <h3 className="text-lg font-medium text-white mb-4">Create New Mission</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormInput
+                        label="Mission Name"
+                        value={newMission.missionName}
+                        onChange={(value) => setNewMission(prev => ({ ...prev, missionName: value }))}
+                        placeholder="Enter mission name"
+                      />
+                      <FormInput
+                        label="Mission Amount (AVAX)"
+                        value={newMission.missionAmount}
+                        onChange={(value) => setNewMission(prev => ({ ...prev, missionAmount: value }))}
+                        placeholder="Enter mission amount in AVAX"
+                        type="number"
+                        step="0.01"
+                      />
+                      <FormInput
+                        label="Reward Amount (AVAX)"
+                        value={newMission.rebornAmount}
+                        onChange={(value) => setNewMission(prev => ({ ...prev, rebornAmount: value }))}
+                        placeholder="Enter reward amount in AVAX"
+                        type="number"
+                        step="0.01"
+                      />
+                      <FormInput
+                        label="Expiry Date"
+                        value={newMission.expiryDate}
+                        onChange={(value) => setNewMission(prev => ({ ...prev, expiryDate: value }))}
+                        type="date"
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={handleCreateMission}
+                        disabled={!newMission.missionName || !newMission.missionAmount || !newMission.rebornAmount || !newMission.expiryDate}
+                        className="bg-purple-500 hover:bg-purple-600 disabled:bg-purple-500/50 disabled:cursor-not-allowed px-6 py-2 rounded-lg font-medium text-white"
+                      >
+                        Create Mission
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Mission List */}
+                <div className="grid gap-6">
+                  {missions.map((mission) => (
+                    <div key={mission.missionId} className="bg-slate-700/50 rounded-lg p-6 border border-slate-600 hover:border-purple-500/50 transition-all duration-200">
+                      {editingMission === mission.missionId ? (
+                        // Edit Form
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormInput
+                              label="Mission Name"
+                              value={editForm.missionName}
+                              onChange={(value) => setEditForm(prev => ({ ...prev, missionName: value }))}
+                              placeholder="Enter mission name"
+                            />
+                            <FormInput
+                              label="Mission Amount (AVAX)"
+                              value={editForm.missionAmount}
+                              onChange={(value) => setEditForm(prev => ({ ...prev, missionAmount: value }))}
+                              placeholder="Enter mission amount in AVAX"
+                              type="number"
+                              step="0.01"
+                            />
+                            <FormInput
+                              label="Reward Amount (AVAX)"
+                              value={editForm.rebornAmount}
+                              onChange={(value) => setEditForm(prev => ({ ...prev, rebornAmount: value }))}
+                              placeholder="Enter reward amount in AVAX"
+                              type="number"
+                              step="0.01"
+                            />
+                            <FormInput
+                              label="Expiry Date"
+                              value={editForm.expiryDate}
+                              onChange={(value) => setEditForm(prev => ({ ...prev, expiryDate: value }))}
+                              type="date"
+                              min={new Date().toISOString().split('T')[0]}
+                            />
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => setEditingMission(null)}
+                              className="bg-slate-600 hover:bg-slate-700 px-4 py-2 rounded-lg font-medium text-white text-sm"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleUpdateMission(mission.missionId)}
+                              disabled={!editForm.missionName || !editForm.missionAmount || !editForm.rebornAmount || !editForm.expiryDate}
+                              className="bg-purple-500 hover:bg-purple-600 disabled:bg-purple-500/50 disabled:cursor-not-allowed px-4 py-2 rounded-lg font-medium text-white text-sm"
+                            >
+                              Update Mission
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        // Mission Display
+                        <>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="text-lg font-semibold text-white">{mission.missionName}</h3>
+                              <p className="text-sm text-gray-400">Mission #{mission.missionId}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                mission.isComplete ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'
+                              }`}>
+                                {mission.isComplete ? 'Completed' : 'Active'}
+                              </span>
+                              <button
+                                onClick={() => startEditingMission(mission)}
+                                className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-slate-600/50"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="mt-4 grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm text-gray-400">Mission Amount</p>
+                              <p className="text-white font-medium">{ethers.utils.formatEther(mission.missionAmount)} AVAX</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-400">Reward Amount</p>
+                              <p className="text-white font-medium">{ethers.utils.formatEther(mission.rebornAmount)} AVAX</p>
+                            </div>
+                          </div>
+                          <div className="mt-4">
+                            <p className="text-sm text-gray-400">Expires</p>
+                            <p className="text-white font-medium">
+                              {new Date(mission.expiryDate.toNumber() * 1000).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
 
-                {missions.length === 0 ? (
+                {missions.length === 0 && !showNewMissionForm && (
                   <div className="text-center py-12">
                     <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
                     <p className="mt-4 text-gray-400">No missions available</p>
-                  </div>
-                ) : (
-                  <div className="grid gap-6">
-                    {missions.map((mission) => (
-                      <div key={mission.missionId} className="bg-slate-700/50 rounded-lg p-6 border border-slate-600 hover:border-purple-500 transition-all duration-200">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="text-lg font-semibold text-white">{mission.missionName}</h3>
-                            <p className="text-sm text-gray-400">Mission #{mission.missionId}</p>
-                          </div>
-                          <div className="flex flex-col items-end gap-2">
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${mission.isComplete ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'}`}>
-                              {mission.isComplete ? 'Completed' : 'Active'}
-                            </span>
-                            {selectedTokenId && mission.canClaim && (
-                              <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-500">
-                                Eligible for Claim
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="mt-4 grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-sm text-gray-400">Mission Amount</p>
-                            <p className="text-white font-medium">{ethers.utils.formatEther(mission.missionAmount)} AVAX</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-400">Reward Amount</p>
-                            <p className="text-white font-medium">{ethers.utils.formatEther(mission.rebornAmount)} AVAX</p>
-                          </div>
-                        </div>
-                        <div className="mt-4">
-                          <p className="text-sm text-gray-400">Expires</p>
-                          <p className="text-white font-medium">
-                            {new Date(mission.expiryDate.toNumber() * 1000).toLocaleDateString()}
-                          </p>
-                        </div>
-                        {!mission.isComplete && selectedTokenId && (
-                          <button
-                            onClick={() => claimMissionReward(mission.missionId, selectedTokenId)}
-                            disabled={!mission.canClaim || isLoading}
-                            className="mt-4 w-full bg-purple-500 hover:bg-purple-600 disabled:bg-purple-500/50 disabled:cursor-not-allowed px-4 py-2 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2"
-                          >
-                            {isLoading && selectedMissionId === mission.missionId ? (
-                              <>
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                Claiming...
-                              </>
-                            ) : (
-                              <>
-                                {mission.canClaim ? 'Claim Reward' : 'Not Eligible'}
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                    <button
+                      onClick={() => setShowNewMissionForm(true)}
+                      className="mt-4 text-purple-500 hover:text-purple-400 font-medium inline-flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Create your first mission
+                    </button>
                   </div>
                 )}
               </div>
