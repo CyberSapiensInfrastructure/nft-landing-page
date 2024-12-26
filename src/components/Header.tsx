@@ -3,6 +3,21 @@ import { Link, useLocation } from 'react-router-dom';
 import { ConnectButton } from './ConnectButton';
 import { motion, AnimatePresence } from 'framer-motion';
 
+interface DropdownItem {
+  label: string;
+  path: string;
+  icon?: string;
+  description?: string;
+  featured?: boolean;
+  stats?: string;
+}
+
+interface NavItem {
+  path: string;
+  label: string;
+  dropdown?: DropdownItem[];
+}
+
 interface HeaderProps {
   onConnect: (address: string) => void;
   onDisconnect: () => void;
@@ -23,15 +38,34 @@ const Header: React.FC<HeaderProps> = ({ onConnect, onDisconnect }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { path: '/', label: 'home' },
     { 
       path: '/list', 
       label: 'nfts',
       dropdown: [
-        { label: 'All NFTs', path: '/list', icon: 'grid' },
-        { label: 'My Collection', path: '/collection', icon: 'collection' },
-        { label: 'Staked NFTs', path: '/staked', icon: 'stake' }
+        { 
+          label: 'All NFTs', 
+          path: '/list', 
+          icon: 'grid',
+          description: 'Browse all available NFTs',
+          featured: true,
+          stats: '2.5k+ NFTs'
+        },
+        { 
+          label: 'My Collection', 
+          path: '/collection', 
+          icon: 'collection',
+          description: 'View your NFT collection',
+          stats: '3 NFTs'
+        },
+        { 
+          label: 'Staked NFTs', 
+          path: '/staked', 
+          icon: 'stake',
+          description: 'Check your staked assets',
+          stats: '1 Staked'
+        }
       ]
     },
     { 
@@ -136,42 +170,34 @@ const Header: React.FC<HeaderProps> = ({ onConnect, onDisconnect }) => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 5, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute left-0 pt-2 w-64 z-50"
+                    className="absolute left-0 pt-2 w-[280px] z-50"
                     style={{ top: "calc(100% + 5px)" }}
                   >
                     <div className="relative">
                       <div 
                         className="absolute -top-2 left-[28px] w-[12px] h-[12px] bg-[#1a1a1a] rotate-45 ring-1 ring-white/5"
-                        style={{ 
-                          boxShadow: "-1px -1px 0 0 rgba(255,255,255,0.05)",
-                        }}
+                        style={{ boxShadow: "-1px -1px 0 0 rgba(255,255,255,0.05)" }}
                       />
                       <div className="relative bg-[#1a1a1a] rounded-xl overflow-hidden ring-1 ring-white/5">
-                        <div className="p-1.5">
-                          {item.dropdown.map((dropItem, index) => (
+                        <div className="p-1">
+                          {item.dropdown.map((dropItem) => (
                             <Link
                               key={dropItem.path}
                               to={dropItem.path}
-                              className="flex items-center gap-3 p-2 rounded-lg text-sm text-white/70 hover:text-white transition-all duration-200 hover:bg-white/[0.03] relative group"
+                              className="flex items-center justify-between p-3 text-sm text-white/70 hover:text-white transition-all duration-200 hover:bg-white/[0.03] rounded-lg group"
                             >
-                              {dropItem.icon && (
-                                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-black/30 text-white/50 group-hover:text-purple-400 group-hover:bg-purple-500/10 transition-all duration-200">
-                                  {renderIcon(dropItem.icon)}
-                                </div>
-                              )}
-                              <div className="flex flex-col gap-0.5 py-1">
-                                <span className="font-medium leading-none">{dropItem.label}</span>
-                                <span className="text-[11px] leading-none text-white/40">
-                                  {dropItem.label === 'All NFTs' && 'Browse all available NFTs'}
-                                  {dropItem.label === 'My Collection' && 'View your NFT collection'}
-                                  {dropItem.label === 'Staked NFTs' && 'Check your staked assets'}
-                                  {dropItem.label === 'Active Missions' && 'View ongoing missions'}
-                                  {dropItem.label === 'Completed' && 'See completed missions'}
-                                  {dropItem.label === 'Rewards' && 'Claim your mission rewards'}
-                                  {dropItem.label === 'Browse' && 'Explore marketplace items'}
-                                  {dropItem.label === 'Create' && 'List items for sale'}
-                                  {dropItem.label === 'Activity' && 'Recent marketplace activity'}
-                                </span>
+                              <div className="flex flex-col gap-0.5">
+                                <span className="font-medium">{dropItem.label}</span>
+                                {dropItem.description && (
+                                  <span className="text-[11px] text-white/40">
+                                    {dropItem.description}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-white/20 group-hover:text-purple-400 transition-colors">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
                               </div>
                             </Link>
                           ))}

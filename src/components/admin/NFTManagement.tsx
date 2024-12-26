@@ -658,10 +658,10 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({ provider, account 
                         step="0.01"
                       />
                       <FormInput
-                        label="Reward Amount (AVAX)"
+                        label="Reborn Amount (AVAX)"
                         value={newMission.rebornAmount}
                         onChange={(value) => setNewMission(prev => ({ ...prev, rebornAmount: value }))}
-                        placeholder="Enter reward amount in AVAX"
+                        placeholder="Enter reborn amount in AVAX"
                         type="number"
                         step="0.01"
                       />
@@ -708,10 +708,10 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({ provider, account 
                               step="0.01"
                             />
                             <FormInput
-                              label="Reward Amount (AVAX)"
+                              label="Reborn Amount (AVAX)"
                               value={editForm.rebornAmount}
                               onChange={(value) => setEditForm(prev => ({ ...prev, rebornAmount: value }))}
-                              placeholder="Enter reward amount in AVAX"
+                              placeholder="Enter reborn amount in AVAX"
                               type="number"
                               step="0.01"
                             />
@@ -769,7 +769,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({ provider, account 
                               <p className="text-white font-medium">{ethers.utils.formatEther(mission.missionAmount)} AVAX</p>
                             </div>
                             <div>
-                              <p className="text-sm text-gray-400">Reward Amount</p>
+                              <p className="text-sm text-gray-400">Reborn Amount</p>
                               <p className="text-white font-medium">{ethers.utils.formatEther(mission.rebornAmount)} AVAX</p>
                             </div>
                           </div>

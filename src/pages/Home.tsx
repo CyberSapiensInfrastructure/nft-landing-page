@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
-import Hero from '../components/Hero';
-import Categories from '../components/Categories';
-import TrendingNFTs from '../components/TrendingNFTs';
-import { NFTGrid } from '../components/NFTGrid';
-import { BottomSheet } from '../components/BottomSheet';
-import { Missions } from '../components/Missions';
-import type { NFT } from '../components/NFTGrid';
-import nftImage from '../assets/img/nft.jpg';
-import { motion } from 'framer-motion';
-import { ethers } from 'ethers';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Link, useOutletContext } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import Hero from "../components/Hero";
+import Categories from "../components/Categories";
+import TrendingNFTs from "../components/TrendingNFTs";
+import { NFTGrid } from "../components/NFTGrid";
+import { BottomSheet } from "../components/BottomSheet";
+import { Missions } from "../components/Missions";
+import type { NFT } from "../components/NFTGrid";
+import nftImage from "../assets/img/nft.jpg";
+import { motion } from "framer-motion";
+import { ethers } from "ethers";
 import { F8__factory } from "typechain-types/factories/F8__factory";
 import { F8 } from "typechain-types/F8";
 import { handleError } from "../utils/validation";
@@ -35,19 +35,21 @@ const MissionCard = ({ mission }: { mission: MissionData }) => {
     <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 overflow-hidden group">
       <div className="relative h-48 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-        <img 
+        <img
           src="/src/assets/img/mission.png"
           alt={mission.missionName}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
         />
         <div className="absolute top-4 right-4 z-20">
-          <span className={`px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm
-            ${mission.isComplete 
-              ? 'bg-green-500/20 text-green-500 border border-green-500/20' 
-              : 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/20'
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm
+            ${
+              mission.isComplete
+                ? "bg-green-500/20 text-green-500 border border-green-500/20"
+                : "bg-yellow-500/20 text-yellow-500 border border-yellow-500/20"
             }`}
           >
-            {mission.isComplete ? 'Completed' : 'Active'}
+            {mission.isComplete ? "Completed" : "Active"}
           </span>
         </div>
       </div>
@@ -58,101 +60,130 @@ const MissionCard = ({ mission }: { mission: MissionData }) => {
         </h3>
         <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-slate-700/30 backdrop-blur-sm">
           <span className="text-gray-400">Reward</span>
-          <span className="text-white font-medium">{ethers.utils.formatEther(mission.rebornAmount)} AVAX</span>
+          <span className="text-white font-medium">
+            {ethers.utils.formatEther(mission.rebornAmount)} AVAX
+          </span>
         </div>
       </div>
     </div>
   );
 };
 
-const MissionSlider = React.memo(({ missions }: { missions: MissionData[] }) => {
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const sliderRef = useRef<HTMLDivElement>(null);
+const MissionSlider = React.memo(
+  ({ missions }: { missions: MissionData[] }) => {
+    const [scrollPosition, setScrollPosition] = useState(0);
+    const sliderRef = useRef<HTMLDivElement>(null);
 
-  const scrollTo = (direction: 'left' | 'right') => {
-    if (!sliderRef.current) return;
-    
-    const scrollAmount = 350 + 24; // card width + gap
-    const maxScroll = sliderRef.current.scrollWidth - sliderRef.current.clientWidth;
-    
-    if (direction === 'left') {
-      const newPosition = Math.max(0, scrollPosition - scrollAmount);
-      setScrollPosition(newPosition);
-      sliderRef.current.scrollTo({ left: newPosition, behavior: 'smooth' });
-    } else {
-      const newPosition = Math.min(maxScroll, scrollPosition + scrollAmount);
-      setScrollPosition(newPosition);
-      sliderRef.current.scrollTo({ left: newPosition, behavior: 'smooth' });
-    }
-  };
+    const scrollTo = (direction: "left" | "right") => {
+      if (!sliderRef.current) return;
 
-  const handleScroll = useCallback(() => {
-    if (sliderRef.current) {
-      setScrollPosition(sliderRef.current.scrollLeft);
-    }
-  }, []);
+      const scrollAmount = 350 + 24; // card width + gap
+      const maxScroll =
+        sliderRef.current.scrollWidth - sliderRef.current.clientWidth;
 
-  useEffect(() => {
-    const slider = sliderRef.current;
-    if (slider) {
-      slider.addEventListener('scroll', handleScroll);
-      return () => slider.removeEventListener('scroll', handleScroll);
-    }
-  }, [handleScroll]);
+      if (direction === "left") {
+        const newPosition = Math.max(0, scrollPosition - scrollAmount);
+        setScrollPosition(newPosition);
+        sliderRef.current.scrollTo({ left: newPosition, behavior: "smooth" });
+      } else {
+        const newPosition = Math.min(maxScroll, scrollPosition + scrollAmount);
+        setScrollPosition(newPosition);
+        sliderRef.current.scrollTo({ left: newPosition, behavior: "smooth" });
+      }
+    };
 
-  const showLeftArrow = scrollPosition > 0;
-  const showRightArrow = sliderRef.current 
-    ? scrollPosition < sliderRef.current.scrollWidth - sliderRef.current.clientWidth - 10
-    : true;
+    const handleScroll = useCallback(() => {
+      if (sliderRef.current) {
+        setScrollPosition(sliderRef.current.scrollLeft);
+      }
+    }, []);
 
-  return (
-    <div className="relative">
-      <div 
-        ref={sliderRef}
-        className="flex overflow-x-auto gap-6 pb-6 snap-x snap-mandatory scrollbar-hide scroll-smooth"
-      >
-        {missions.map((mission) => (
-          <div key={mission.missionId} className="min-w-[350px] snap-start flex-shrink-0">
-            <MissionCard mission={mission} />
-          </div>
-        ))}
+    useEffect(() => {
+      const slider = sliderRef.current;
+      if (slider) {
+        slider.addEventListener("scroll", handleScroll);
+        return () => slider.removeEventListener("scroll", handleScroll);
+      }
+    }, [handleScroll]);
+
+    const showLeftArrow = scrollPosition > 0;
+    const showRightArrow = sliderRef.current
+      ? scrollPosition <
+        sliderRef.current.scrollWidth - sliderRef.current.clientWidth - 10
+      : true;
+
+    return (
+      <div className="relative">
+        <div
+          ref={sliderRef}
+          className="flex overflow-x-auto gap-6 pb-6 snap-x snap-mandatory scrollbar-hide scroll-smooth"
+        >
+          {missions.map((mission) => (
+            <div
+              key={mission.missionId}
+              className="min-w-[350px] snap-start flex-shrink-0"
+            >
+              <MissionCard mission={mission} />
+            </div>
+          ))}
+        </div>
+
+        {/* Navigation Arrows */}
+        {showLeftArrow && (
+          <button
+            onClick={() => scrollTo("left")}
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all duration-300 hover:bg-black/70 z-20"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+        )}
+
+        {showRightArrow && (
+          <button
+            onClick={() => scrollTo("right")}
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all duration-300 hover:bg-black/70 z-20"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        )}
+
+        {/* Gradient Overlays */}
+        <div className="absolute left-0 top-0 bottom-6 w-20 bg-gradient-to-r from-[#0c0c0c] to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-6 w-20 bg-gradient-to-l from-[#0c0c0c] to-transparent pointer-events-none" />
       </div>
-
-      {/* Navigation Arrows */}
-      {showLeftArrow && (
-        <button
-          onClick={() => scrollTo('left')}
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all duration-300 hover:bg-black/70 z-20"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-      )}
-      
-      {showRightArrow && (
-        <button
-          onClick={() => scrollTo('right')}
-          className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all duration-300 hover:bg-black/70 z-20"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      )}
-
-      {/* Gradient Overlays */}
-      <div className="absolute left-0 top-0 bottom-6 w-20 bg-gradient-to-r from-[#0c0c0c] to-transparent pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-6 w-20 bg-gradient-to-l from-[#0c0c0c] to-transparent pointer-events-none" />
-    </div>
-  );
-});
+    );
+  }
+);
 
 const Home: React.FC = () => {
   const { provider, account } = useOutletContext<ContextType>();
   const [selectedNFT, setSelectedNFT] = useState<NFT | null>(null);
-  const [view, setView] = useState<'grid' | 'list'>('grid');
-  const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [activeTab, setActiveTab] = useState<"all" | "my">("all");
   const [isNFTsLoading, setIsNFTsLoading] = useState(true);
   const [isMissionsLoading, setIsMissionsLoading] = useState(false);
   const [nfts, setNfts] = useState<NFT[]>([]);
@@ -219,8 +250,11 @@ const Home: React.FC = () => {
     try {
       setIsMissionsLoading(true);
       const signer = provider.getSigner();
-      const f8Contract = F8__factory.connect('0x4684059c10Cc9b9E3013c953182E2e097B8d089d', signer);
-      
+      const f8Contract = F8__factory.connect(
+        "0x4684059c10Cc9b9E3013c953182E2e097B8d089d",
+        signer
+      );
+
       const missionCounter = await f8Contract.getMissionCounter();
       const missionPromises = [];
 
@@ -235,13 +269,13 @@ const Home: React.FC = () => {
         missionAmount: mission.missionAmount,
         rebornAmount: mission.rebornAmount,
         isComplete: mission.isComplete,
-        expiryDate: mission.expiryDate
+        expiryDate: mission.expiryDate,
       }));
 
       setMissions(formattedMissions);
       hasFetchedRef.current = true;
     } catch (error) {
-      console.error('Error fetching missions:', handleError(error));
+      console.error("Error fetching missions:", handleError(error));
     } finally {
       setIsMissionsLoading(false);
     }
@@ -262,19 +296,14 @@ const Home: React.FC = () => {
     <div className="space-y-20">
       {/* Hero Section */}
       <Hero />
-
-      {/* Categories */}
-      <Categories />
-
-      {/* Trending NFTs */}
-      <TrendingNFTs onSelectNFT={(nft) => setSelectedNFT(nft)} />
-
       {/* Missions Section */}
       <section className="py-20 bg-[#0c0c0c]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
             <div>
-              <h2 className="text-3xl font-bold text-white mb-2">Active Missions</h2>
+              <h2 className="text-3xl font-bold text-white mb-2">
+                Active Missions
+              </h2>
               <p className="text-gray-400">Complete missions to earn rewards</p>
             </div>
             <Link
@@ -282,8 +311,18 @@ const Home: React.FC = () => {
               className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 px-6 py-3 rounded-lg text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/25"
             >
               View All Missions
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
               </svg>
             </Link>
           </div>
@@ -291,44 +330,24 @@ const Home: React.FC = () => {
           {isMissionsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="animate-pulse bg-slate-800/50 rounded-xl h-[300px]" />
+                <div
+                  key={i}
+                  className="animate-pulse bg-slate-800/50 rounded-xl h-[300px]"
+                />
               ))}
             </div>
           ) : missions.length > 0 ? (
             <MissionSlider missions={missions} />
           ) : (
             <div className="text-center py-12 bg-slate-800/50 rounded-xl">
-              <p className="text-gray-400">No missions available at the moment</p>
+              <p className="text-gray-400">
+                No missions available at the moment
+              </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* NFT Grid */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold">featured nfts</h2>
-          <Link
-            to="/list"
-            className="px-6 py-2.5 bg-[#7042f88b] hover:bg-[#7042f88b]/80 text-white rounded-xl 
-                    transition-all duration-300 flex items-center gap-2"
-          >
-            view all
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
-        <NFTGrid
-          nfts={nfts}
-          isLoading={isNFTsLoading}
-          onSelect={(nft) => setSelectedNFT(nft)}
-          selectedNFTId={selectedNFT?.id}
-          view={view}
-          onViewChange={setView}
-          onTabChange={setActiveTab}
-        />
-      </div>
 
       {/* NFT Detail Bottom Sheet */}
       <AnimatePresence>
@@ -346,4 +365,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home; 
+export default Home;

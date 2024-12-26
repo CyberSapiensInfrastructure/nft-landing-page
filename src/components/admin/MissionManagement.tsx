@@ -233,7 +233,7 @@ export const MissionManagement: React.FC<MissionManagementProps> = ({ provider, 
                       <p className="text-white font-medium">{ethers.utils.formatEther(mission.missionAmount)} AVAX</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">Reward Amount</p>
+                      <p className="text-sm text-gray-400">Reborn Amount</p>
                       <p className="text-white font-medium">{ethers.utils.formatEther(mission.rebornAmount)} AVAX</p>
                     </div>
                   </div>

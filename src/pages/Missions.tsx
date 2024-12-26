@@ -133,7 +133,7 @@ const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim }: {
             <span className="text-white font-medium">{ethers.utils.formatEther(mission.missionAmount)} AVAX</span>
           </div>
           <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-slate-700/30 backdrop-blur-sm">
-            <span className="text-gray-400">Reward Amount</span>
+            <span className="text-gray-400">Reborn Amount</span>
             <span className="text-white font-medium">{ethers.utils.formatEther(mission.rebornAmount)} AVAX</span>
           </div>
           <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-slate-700/30 backdrop-blur-sm">
