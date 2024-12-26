@@ -1,19 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Hero from '../components/Hero';
 import Categories from '../components/Categories';
 import TrendingNFTs from '../components/TrendingNFTs';
 import { NFTGrid } from '../components/NFTGrid';
 import { BottomSheet } from '../components/BottomSheet';
+import { Missions } from '../components/Missions';
 import type { NFT } from '../components/NFTGrid';
 import nftImage from '../assets/img/nft.jpg';
 
+interface ContextType {
+  provider: any;
+  account: string | null;
+}
+
 const Home: React.FC = () => {
+  const { provider, account } = useOutletContext<ContextType>();
   const [selectedNFT, setSelectedNFT] = useState<NFT | null>(null);
+  const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [nfts, setNfts] = useState<NFT[]>([]);
-  const [view, setView] = useState<'list' | 'grid'>('list');
 
   useEffect(() => {
     const fetchNFTs = async () => {
@@ -69,26 +77,28 @@ const Home: React.FC = () => {
     fetchNFTs();
   }, []);
 
-  const handleNFTSelect = (nft: NFT) => {
-    setSelectedNFT(nft);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedNFT(null);
-  };
-
   return (
-    <div>
+    <div className="space-y-20">
+      {/* Hero Section */}
       <Hero />
+
+      {/* Categories */}
       <Categories />
-      <TrendingNFTs onSelectNFT={handleNFTSelect} />
+
+      {/* Trending NFTs */}
+      <TrendingNFTs onSelectNFT={(nft) => setSelectedNFT(nft)} />
+
+      {/* Missions Section */}
+      <Missions provider={provider} account={account} />
+
+      {/* NFT Grid */}
       <div className="container mx-auto px-4 py-12">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold">featured nfts</h2>
           <Link
             to="/list"
             className="px-6 py-2.5 bg-[#7042f88b] hover:bg-[#7042f88b]/80 text-white rounded-xl 
-                     transition-all duration-300 flex items-center gap-2"
+                    transition-all duration-300 flex items-center gap-2"
           >
             view all
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,22 +109,24 @@ const Home: React.FC = () => {
         <NFTGrid
           nfts={nfts}
           isLoading={isLoading}
-          onSelect={handleNFTSelect}
+          onSelect={(nft) => setSelectedNFT(nft)}
           selectedNFTId={selectedNFT?.id}
           view={view}
           onViewChange={setView}
-          onTabChange={() => {}}
+          onTabChange={setActiveTab}
         />
       </div>
 
-      {/* NFT Detail Modal */}
+      {/* NFT Detail Bottom Sheet */}
       <AnimatePresence>
         {selectedNFT && (
           <BottomSheet
             selectedNFT={selectedNFT}
             isOpen={!!selectedNFT}
-            onClose={handleCloseModal}
-          />
+            onClose={() => setSelectedNFT(null)}
+          >
+            {/* Bottom sheet content */}
+          </BottomSheet>
         )}
       </AnimatePresence>
     </div>

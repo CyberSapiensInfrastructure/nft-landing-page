@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ethers } from "ethers";
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -34,6 +34,7 @@ const Layout: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
+  const provider = useSelector((state: any) => state.provider.provider);
 
   const handleConnect = async (address: string) => {
     setWalletAddress(address);
@@ -122,8 +123,10 @@ const Layout: React.FC = () => {
                 duration: 0.3,
                 ease: "easeInOut"
               }}
+              className="relative"
+              style={{ position: 'relative' }}
             >
-              <Outlet />
+              <Outlet context={{ provider, account: walletAddress }} />
             </motion.div>
           </AnimatePresence>
         </main>
