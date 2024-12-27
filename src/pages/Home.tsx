@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useOutletContext } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
 import Hero from "../components/Hero";
-import { BottomSheet } from "../components/BottomSheet";
-import type { NFT } from "../components/NFTGrid";
-import nftImage from "../assets/img/nft.jpg";
 import { ethers } from "ethers";
 import { F8__factory } from "typechain-types/factories/F8__factory";
 import { handleError } from "../utils/validation";
@@ -175,10 +171,7 @@ const MissionSlider = React.memo(
 
 const Home: React.FC = () => {
   const { provider, account } = useOutletContext<ContextType>();
-  const [selectedNFT, setSelectedNFT] = useState<NFT | null>(null);
-
   const [isMissionsLoading, setIsMissionsLoading] = useState(false);
-  const [nfts, setNfts] = useState<NFT[]>([]);
   const [missions, setMissions] = useState<MissionData[]>([]);
   const hasFetchedRef = useRef(false);
 
