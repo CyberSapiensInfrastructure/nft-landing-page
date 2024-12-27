@@ -3,20 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { ConnectButton } from './ConnectButton';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface DropdownItem {
-  label: string;
-  path: string;
-  icon?: string;
-  description?: string;
-  featured?: boolean;
-  stats?: string;
-}
 
-interface NavItem {
-  path: string;
-  label: string;
-  dropdown?: DropdownItem[];
-}
+
 
 interface HeaderProps {
   onConnect: (address: string) => void;

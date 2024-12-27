@@ -59,8 +59,6 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({ provider, account 
   const [showToast, setShowToast] = useState(false);
   const [activeTab, setActiveTab] = useState<'mint' | 'list' | 'missions'>('mint');
   const [selectedTokenId, setSelectedTokenId] = useState("");
-  const [tokenIdError, setTokenIdError] = useState("");
-  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
   const [showNewMissionForm, setShowNewMissionForm] = useState(false);
   const [newMission, setNewMission] = useState<NewMissionForm>({
     missionName: '',
@@ -200,41 +198,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({ provider, account 
     }
   };
 
-  // Claim mission reward
-  const claimMissionReward = async (missionId: string, tokenId: string) => {
-    if (!f8Contract) return;
-
-    try {
-      setIsLoading(true);
-      setLoadingMessage("Claiming reward...");
-
-      const gasEstimate = await f8Contract.estimateGas.missionRewardClaim(missionId, tokenId);
-      
-      const tx = await f8Contract.missionRewardClaim(missionId, tokenId, {
-        gasLimit: Math.floor(gasEstimate.toNumber() * 1.2)
-      });
-
-      setLoadingMessage("Waiting for confirmation...");
-      await tx.wait();
-
-      setToastMessage("Mission reward claimed successfully!");
-      setToastType('success');
-      setShowToast(true);
-      
-      // Refresh missions after claiming
-      getMissions();
-    } catch (error) {
-      const errorMessage = handleError(error);
-      setToastMessage(errorMessage);
-      setToastType('error');
-      setShowToast(true);
-    } finally {
-      setIsLoading(false);
-      setLoadingMessage("");
-      setSelectedMissionId(null);
-      setSelectedTokenId("");
-    }
-  };
+ 
 
   // Get all missions with claim status
   const getMissions = async () => {
@@ -557,7 +521,13 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({ provider, account 
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {nftMetadata.map((nft) => (
-                      <div key={nft.tokenId} className="bg-slate-700/50 rounded-lg overflow-hidden border border-slate-600 hover:border-purple-500 transition-all duration-200">
+                      <div 
+                        key={nft.tokenId} 
+                        onClick={() => setSelectedTokenId(nft.tokenId)}
+                        className={`bg-slate-700/50 rounded-lg overflow-hidden border border-slate-600 hover:border-purple-500 transition-all duration-200 cursor-pointer ${
+                          selectedTokenId === nft.tokenId ? 'ring-2 ring-purple-500 bg-purple-500/5' : ''
+                        }`}
+                      >
                         <div className="aspect-square w-full relative">
                           <img 
                             src={nft.image} 
