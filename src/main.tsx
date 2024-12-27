@@ -12,7 +12,6 @@ import './index.css';
 const Home = lazy(() => import('./pages/Home'));
 const NFTListPage = lazy(() => import('./pages/NFTListPage'));
 const NFTDetail = lazy(() => import('./pages/NFTDetail'));
-const Marketplace = lazy(() => import('./pages/Marketplace'));
 const Community = lazy(() => import('./pages/Community'));
 const About = lazy(() => import('./pages/About'));
 const AdminPage = lazy(() => import('./pages/admin'));
@@ -60,7 +59,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route index element={<Home />} />
               <Route path="list" element={<NFTListPage />} />
               <Route path="nft/:id" element={<NFTDetail />} />
-              <Route path="marketplace" element={<Marketplace />} />
               <Route path="missions" element={<Missions />} />
               <Route path="community" element={<Community />} />
               <Route path="about" element={<About />} />

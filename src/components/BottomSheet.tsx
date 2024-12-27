@@ -109,14 +109,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           >
             view details
           </Link>
-
-          <button
-            className="w-full py-3 bg-[#0c0c0c] hover:bg-[#0c0c0c]/80 
-                     border border-[#a8c7fa]/10 hover:border-[#7042f88b]/50
-                     rounded-xl transition-all duration-300"
-          >
-            view on marketplace
-          </button>
         </div>
       </div>
     </motion.div>
