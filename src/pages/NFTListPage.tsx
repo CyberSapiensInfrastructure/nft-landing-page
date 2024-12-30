@@ -40,7 +40,7 @@ const NFTListPage: React.FC = () => {
           method: "eth_accounts",
         });
         setIsWalletConnected(accounts.length > 0);
-        
+
         if (accounts.length > 0) {
           const signer = provider.getSigner();
           const contract = F8__factory.connect(F8_ADDRESS, signer);
@@ -86,7 +86,7 @@ const NFTListPage: React.FC = () => {
 
       setIsLoading(true);
       setLoadingMessage("Fetching your NFTs...");
-      
+
       try {
         const accounts = await window.ethereum.request({
           method: "eth_accounts",
@@ -215,38 +215,85 @@ const NFTListPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-8"
+          className="text-center mb-12 relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-500/10 via-slate-900 to-purple-500/10 p-8"
         >
-          <h1 className="text-4xl font-bold mb-6">nft collection</h1>
-          <FilterBar
-            filters={filters}
-            setFilters={setFilters}
-            view={view}
-            setView={setView}
-            isWalletConnected={isWalletConnected}
-            onConnectWallet={handleConnectWallet}
-          />
+          <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0c0c0c] [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]" />
+          <div className="relative">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Providence nfts
+            </h1>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Providence NFTs are unique digital collectibles on the Avalanche
+              blockchain. Each NFT represents a piece of the Providence
+              ecosystem and grants special access to missions and rewards.
+            </p>
+          </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          {isWalletConnected ? (
-            <NFTGrid
-              nfts={filteredNFTs}
-              isLoading={isLoading}
-              onSelect={handleNFTSelect}
-              selectedNFTId={selectedNFT?.id}
-              view={view}
-            />
-          ) : (
-            <div className="text-center text-[#a8c7fa]/60 py-12">
-              Connect your wallet to view your NFTs
+        {!isWalletConnected ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-center py-16 bg-gradient-to-r from-purple-500/5 via-slate-800/50 to-purple-500/5 rounded-xl border border-purple-500/10 backdrop-blur-xl"
+          >
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-purple-500/10 flex items-center justify-center">
+              <svg
+                className="w-10 h-10 text-purple-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
             </div>
-          )}
-        </motion.div>
+            <h3 className="text-xl font-semibold text-white mb-2">
+              Wallet Not Connected
+            </h3>
+            <p className="text-gray-400 mb-6">
+              Connect your wallet to view and participate in missions
+            </p>
+          </motion.div>
+        ) : (
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-8"
+            >
+              <h1 className="text-4xl font-bold mb-6">nft collection</h1>
+              <FilterBar
+                filters={filters}
+                setFilters={setFilters}
+                view={view}
+                setView={setView}
+                isWalletConnected={isWalletConnected}
+                onConnectWallet={handleConnectWallet}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <NFTGrid
+                nfts={filteredNFTs}
+                isLoading={isLoading}
+                onSelect={handleNFTSelect}
+                selectedNFTId={selectedNFT?.id}
+                view={view}
+              />
+            </motion.div>
+          </>
+        )}
 
         <AnimatePresence>
           {selectedNFT && (

@@ -1,5 +1,6 @@
 import { NFT } from './types';
 import { NFTListItemContent } from './NFTListItemContent';
+import { useWallet } from '../../context/WalletContext';
 
 interface NFTListProps {
   nfts: NFT[];
@@ -8,13 +9,22 @@ interface NFTListProps {
 }
 
 export const NFTList: React.FC<NFTListProps> = ({ nfts, onSelect, selectedNFTId }) => {
+  const { connectWallet } = useWallet();
+
   if (nfts.length === 0) {
     return (
-      <div className="text-center py-12">
-        <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-        <p className="mt-4 text-gray-400">Connect your wallet to view your NFTs</p>
+      <div className="flex flex-col items-center justify-center py-20 space-y-6">
+        <h1 className="text-4xl font-bold text-white">nft collection</h1>
+        <button
+          onClick={connectWallet}
+          className="flex items-center gap-2 px-8 py-4 bg-[#7042f861] hover:bg-[#7042f88b] transition-all duration-300 rounded-full text-white"
+        >
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          Connect Wallet to View Your NFTs
+        </button>
+        <p className="text-[#a8c7fa]/60">connect your wallet to view your nfts</p>
       </div>
     );
   }
