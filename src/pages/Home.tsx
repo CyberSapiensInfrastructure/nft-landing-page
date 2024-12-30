@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import Hero from "../components/Hero";
 import { ethers } from "ethers";
-import { F8__factory } from "typechain-types/factories/F8__factory";
 import { handleError } from "../utils/validation";
-
+import { F8__factory } from "../../typechain-types/factories/F8__factory";
 interface MissionData {
   missionId: string;
   missionName: string;

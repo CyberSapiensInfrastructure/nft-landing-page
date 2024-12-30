@@ -21,8 +21,6 @@ export interface NFTGridProps {
   onSelect: (nft: NFT) => void;
   selectedNFTId?: number;
   view: "grid" | "list";
-  onViewChange: (view: "grid" | "list") => void;
-  onTabChange: (tab: "all" | "my") => void;
 }
 
 export const NFTGrid: React.FC<NFTGridProps> = ({

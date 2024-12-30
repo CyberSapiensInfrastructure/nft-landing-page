@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 
 const categories = [
   {
     id: 1,
-    name: 'WHITELIST',
+    name: "WHITELIST",
     icon: (
       <svg
         className="w-6 h-6"
@@ -22,7 +22,7 @@ const categories = [
   },
   {
     id: 2,
-    name: 'AIRDROP',
+    name: "AIRDROP",
     icon: (
       <svg
         className="w-6 h-6"
@@ -41,7 +41,7 @@ const categories = [
   },
   {
     id: 3,
-    name: 'REBORN',
+    name: "REBORN",
     icon: (
       <svg
         className="w-6 h-6"
@@ -60,7 +60,7 @@ const categories = [
   },
   {
     id: 4,
-    name: 'GENESIS',
+    name: "GENESIS",
     icon: (
       <svg
         className="w-6 h-6"
@@ -104,4 +104,4 @@ const Categories: React.FC = () => {
   );
 };
 
-export default Categories; 
+export default Categories;
