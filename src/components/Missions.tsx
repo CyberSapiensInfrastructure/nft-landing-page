@@ -23,18 +23,45 @@ interface MissionsProps {
   account: string | null;
 }
 
-const formatExpiryDate = (timestamp: number) => {
-  const date = new Date(timestamp * 1000);
-  const now = new Date();
-  const diffTime = date.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+const safeToNumber = (bn: BigNumber): number => {
+  try {
+    return bn.toNumber();
+  } catch (error) {
+    console.error("Error converting BigNumber to number:", error);
+    return 0;
+  }
+};
 
-  if (diffDays < 0) return "Expired";
-  if (diffDays === 0) return "Expires Today";
-  if (diffDays === 1) return "Expires Tomorrow";
-  if (diffDays <= 7) return `Expires in ${diffDays} days`;
-  
-  return `Expires on ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+const formatExpiryDate = (timestamp: BigNumber): string => {
+  try {
+    const date = new Date(safeToNumber(timestamp) * 1000);
+    const now = new Date();
+    const diffTime = date.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return "Expired";
+    if (diffDays === 0) return "Expires Today";
+    if (diffDays === 1) return "Expires Tomorrow";
+    if (diffDays <= 7) return `Expires in ${diffDays} days`;
+    
+    return `Expires on ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+  } catch (error) {
+    console.error("Error formatting expiry date:", error);
+    return "Invalid Date";
+  }
+};
+
+const formatAmount = (amount: BigNumber): string => {
+  try {
+    if (!BigNumber.isBigNumber(amount)) {
+      console.error("Invalid BigNumber:", amount);
+      return "0";
+    }
+    return ethers.utils.formatEther(amount);
+  } catch (error) {
+    console.error("Error formatting amount:", error);
+    return "0";
+  }
 };
 
 export const Missions: React.FC<MissionsProps> = ({ provider, account }) => {
@@ -204,99 +231,108 @@ export const Missions: React.FC<MissionsProps> = ({ provider, account }) => {
 
             {/* Missions Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {missions.map((mission) => (
-                <div 
-                  key={mission.missionId}
-                  className={`bg-slate-800/50 backdrop-blur-sm rounded-xl border transition-all duration-300
-                    ${mission.isComplete 
-                      ? 'border-green-500/20 hover:border-green-500/40' 
-                      : mission.canClaim 
-                        ? 'border-purple-500/20 hover:border-purple-500/40'
-                        : 'border-slate-700/50 hover:border-slate-600/50'
-                    }`}
-                >
-                  <div className="p-6 space-y-4">
-                    {/* Mission Header */}
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-xl font-bold text-white">{mission.missionName}</h3>
-                        <p className="text-sm text-gray-400">Mission #{mission.missionId}</p>
+              {missions.map((mission) => {
+                // Safely check if mission object and its properties exist
+                if (!mission || !BigNumber.isBigNumber(mission.missionAmount) || 
+                    !BigNumber.isBigNumber(mission.rebornAmount) || 
+                    !BigNumber.isBigNumber(mission.expiryDate)) {
+                  return null;
+                }
+
+                return (
+                  <div 
+                    key={mission.missionId}
+                    className={`bg-slate-800/50 backdrop-blur-sm rounded-xl border transition-all duration-300
+                      ${mission.isComplete 
+                        ? 'border-green-500/20 hover:border-green-500/40' 
+                        : mission.canClaim 
+                          ? 'border-purple-500/20 hover:border-purple-500/40'
+                          : 'border-slate-700/50 hover:border-slate-600/50'
+                      }`}
+                  >
+                    <div className="p-6 space-y-4">
+                      {/* Mission Header */}
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-xl font-bold text-white">{mission.missionName || 'Unnamed Mission'}</h3>
+                          <p className="text-sm text-gray-400">Mission #{mission.missionId}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium
+                            ${mission.isComplete 
+                              ? 'bg-green-500/20 text-green-500' 
+                              : 'bg-yellow-500/20 text-yellow-500'
+                            }`}
+                          >
+                            {mission.isComplete ? 'Completed' : 'Active'}
+                          </span>
+                          {selectedTokenId && mission.canClaim && (
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500">
+                              Eligible for Claim
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium
-                          ${mission.isComplete 
-                            ? 'bg-green-500/20 text-green-500' 
-                            : 'bg-yellow-500/20 text-yellow-500'
-                          }`}
+
+                      {/* Mission Details */}
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 gap-2">
+                          {BigNumber.isBigNumber(mission.missionAmount) && !mission.missionAmount.isZero() && (
+                            <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
+                              <p className="text-xs text-gray-400 mb-1">Mission Amount</p>
+                              <p className="text-sm sm:text-base font-semibold text-white">
+                                {formatAmount(mission.missionAmount)} AVAX
+                              </p>
+                            </div>
+                          )}
+                          {BigNumber.isBigNumber(mission.rebornAmount) && !mission.rebornAmount.isZero() && (
+                            <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
+                              <p className="text-xs text-gray-400 mb-1">Reborn Amount</p>
+                              <p className="text-sm sm:text-base font-semibold text-white">
+                                {formatAmount(mission.rebornAmount)} AVAX
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
+                          <div className="flex justify-between items-center mb-2">
+                            <p className="text-xs text-gray-400">Time Remaining</p>
+                            <span className="text-xs font-medium text-white">
+                              {formatExpiryDate(mission.expiryDate)}
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-600/30 rounded-full h-1.5">
+                            <div className="h-full rounded-full bg-purple-500" style={{
+                              width: `${Math.max(0, Math.min(100, (new Date(safeToNumber(mission.expiryDate) * 1000).getTime() - new Date().getTime()) / (7 * 24 * 60 * 60 * 1000) * 100))}%`
+                            }} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Claim Button */}
+                      {!mission.isComplete && selectedTokenId && (
+                        <button
+                          onClick={() => claimMissionReward(mission.missionId, selectedTokenId)}
+                          disabled={!mission.canClaim || isLoading}
+                          className="mt-4 w-full bg-purple-500 hover:bg-purple-600 disabled:bg-purple-500/50 disabled:cursor-not-allowed px-4 py-3 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2"
                         >
-                          {mission.isComplete ? 'Completed' : 'Active'}
-                        </span>
-                        {selectedTokenId && mission.canClaim && (
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500">
-                            Eligible for Claim
-                          </span>
-                        )}
-                      </div>
+                          {isLoading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              Claiming...
+                            </>
+                          ) : (
+                            <>
+                              {mission.canClaim ? 'Claim Reward' : 'Not Eligible'}
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
-
-                    {/* Mission Details */}
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-1 gap-2">
-                        {parseFloat(ethers.utils.formatEther(mission.missionAmount)) > 0 && (
-                          <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
-                            <p className="text-xs text-gray-400 mb-1">Mission Amount</p>
-                            <p className="text-sm sm:text-base font-semibold text-white">
-                              {ethers.utils.formatEther(mission.missionAmount)} AVAX
-                            </p>
-                          </div>
-                        )}
-                        {parseFloat(ethers.utils.formatEther(mission.rebornAmount)) > 0 && (
-                          <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
-                            <p className="text-xs text-gray-400 mb-1">Reborn Amount</p>
-                            <p className="text-sm sm:text-base font-semibold text-white">
-                              {ethers.utils.formatEther(mission.rebornAmount)} AVAX
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
-                        <div className="flex justify-between items-center mb-2">
-                          <p className="text-xs text-gray-400">Time Remaining</p>
-                          <span className="text-xs font-medium text-white">
-                            {formatExpiryDate(mission.expiryDate.toNumber())}
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-600/30 rounded-full h-1.5">
-                          <div className="h-full rounded-full bg-purple-500" style={{
-                            width: `${Math.max(0, Math.min(100, (new Date(mission.expiryDate.toNumber() * 1000).getTime() - new Date().getTime()) / (7 * 24 * 60 * 60 * 1000) * 100))}%`
-                          }} />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Claim Button */}
-                    {!mission.isComplete && selectedTokenId && (
-                      <button
-                        onClick={() => claimMissionReward(mission.missionId, selectedTokenId)}
-                        disabled={!mission.canClaim || isLoading}
-                        className="mt-4 w-full bg-purple-500 hover:bg-purple-600 disabled:bg-purple-500/50 disabled:cursor-not-allowed px-4 py-3 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2"
-                      >
-                        {isLoading ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Claiming...
-                          </>
-                        ) : (
-                          <>
-                            {mission.canClaim ? 'Claim Reward' : 'Not Eligible'}
-                          </>
-                        )}
-                      </button>
-                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {missions.length === 0 && (
