@@ -1,41 +1,25 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import nftImage from '../assets/img/nft.jpg';
 import { DecoElements } from '../components/Layout';
 import { useScrollToTop } from '../hooks/useScrollToTop';
-import { ethers, BigNumber } from 'ethers';
-import { F8__factory } from 'typechain-types/factories/F8__factory';
+import { ethers } from 'ethers';
+import { F8__factory } from '../../typechain-types/factories/F8__factory';
+import { useNFT } from '../context/NFTContext';
+import { NFTMetadata } from '../types/nft';
 
 const F8_ADDRESS = '0x4684059c10Cc9b9E3013c953182E2e097B8d089d';
-
-interface NFTMetadata {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  status: 'completed' | 'not_completed';
-  expireDate: string;
-  missionAmount: number;
-  rarity: string;
-  creator: string;
-  collection: string;
-  blockchain: string;
-  missions: Array<{ name: string; completed: boolean }>;
-  attributes: Array<{ trait_type: string; value: string | number }>;
-}
-
-interface Attribute {
-  trait_type: string;
-  value: string | number;
-}
 
 export const NFTDetail = () => {
   useScrollToTop();
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { getNFTById, setNFTData, setActiveNFT, activeNFT, viewHistory } = useNFT();
   const [nft, setNft] = useState<NFTMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'attributes' | 'history'>('overview');
 
   // Check wallet connection
   useEffect(() => {
@@ -50,77 +34,48 @@ export const NFTDetail = () => {
 
   useEffect(() => {
     const fetchNFTData = async () => {
-      if (!id || !window.ethereum) return;
-      if (!isWalletConnected) return;
+      if (!id) return;
 
       try {
-        setIsLoading(true);
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const contract = F8__factory.connect(F8_ADDRESS, signer);
-
-        // Fetch token URI
-        const uri = await contract.tokenURI(BigNumber.from(id));
+        const contract = F8__factory.connect(F8_ADDRESS, provider);
         
-        // Fetch metadata
-        const proxyUrl = 'https://api.allorigins.win/get?url=';
-        const response = await fetch(proxyUrl + encodeURIComponent(`${uri}.json`));
-        const proxyData = await response.json();
-        const metadata = JSON.parse(proxyData.contents);
-
-        // Transform metadata to our format
+        // Get tokenURI from contract
+        const tokenURI = await contract.tokenURI(parseInt(id));
+        console.log('TokenURI:', tokenURI);
+            
+        // Use tokenURI data
         const nftData: NFTMetadata = {
           id: parseInt(id),
-          name: metadata.name || `F8 NFT #${id}`,
-          description: metadata.description || "Providence NFT",
-          image: metadata.image || `http://cybersapiens.xyz/f8/img/${id}.png`,
-          status: "completed",
-          expireDate: "31.12.2024 - 23:59:59",
-          missionAmount: metadata.attributes?.find((attr: Attribute) => attr.trait_type === "Mission Amount")?.value as number || 0,
-          rarity: metadata.attributes?.find((attr: Attribute) => attr.trait_type === "Rarity")?.value as string || "Legendary",
-          creator: "Providence Labs",
-          collection: "Genesis Collection",
-          blockchain: "Avalanche",
-          missions: [
-            { name: "Join Discord", completed: true },
-            { name: "Follow Twitter", completed: true },
-            { name: "Share Announcement", completed: false },
-            { name: "Invite Friends", completed: false }
-          ],
-          attributes: metadata.attributes || []
+          name: `F8 NFT #${id}`,
+          description: `TokenURI: ${tokenURI}`,
+          image: nftImage,
+          status: 'not_completed',
+          expireDate: new Date().toISOString(),
+          missionAmount: 0,
+          rarity: "Unknown",
+          creator: "Unknown",
+          collection: "F8 Collection",
+          blockchain: "Ethereum",
+          missions: [],
+          attributes: [
+            { trait_type: "TokenURI", value: tokenURI }
+          ]
         };
 
+        setNFTData(id, nftData);
+        setActiveNFT(nftData);
         setNft(nftData);
       } catch (error) {
-        console.error("Error fetching NFT data:", error);
-        // Fallback to mock data if fetch fails
-        setNft({
-          id: Number(id),
-          name: ["WHITELIST", "AIRDROP", "REBORN", "GENESIS"][Number(id) - 1],
-          image: nftImage,
-          status: Number(id) % 2 === 0 ? 'not_completed' : 'completed',
-          expireDate: "31.12.2024 - 23:59:59",
-          missionAmount: Number(id) - 1,
-          description: "This exclusive NFT grants you special access and privileges in the Providence ecosystem. Complete missions to unlock full potential.",
-          rarity: "Legendary",
-          creator: "Providence Labs",
-          collection: "Genesis Collection",
-          blockchain: "Avalanche",
-          missions: [
-            { name: "Join Discord", completed: true },
-            { name: "Follow Twitter", completed: true },
-            { name: "Share Announcement", completed: false },
-            { name: "Invite Friends", completed: false }
-          ],
-          attributes: []
-        });
+        console.error('Contract Error:', error);
+        setNft(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchNFTData();
-  }, [id, isWalletConnected]);
+  }, [id]);
 
   const containerVariants = {
     initial: { opacity: 0 },
@@ -154,6 +109,118 @@ export const NFTDetail = () => {
       y: -20, 
       opacity: 0,
       transition: { duration: 0.3, ease: "easeIn" }
+    }
+  };
+
+  const renderTabContent = () => {
+    switch (selectedTab) {
+      case 'overview':
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold">Overview</h2>
+              <p className="text-[#a8c7fa]/60 text-lg">{nft?.description}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
+                <div className="text-sm text-[#a8c7fa]/60">Collection</div>
+                <div className="text-white mt-1">{nft?.collection}</div>
+              </div>
+              <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
+                <div className="text-sm text-[#a8c7fa]/60">Creator</div>
+                <div className="text-white mt-1">{nft?.creator}</div>
+              </div>
+            </div>
+
+            {/* Missions Progress */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Missions</h2>
+              <div className="space-y-3">
+                {nft?.missions.map((mission, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10"
+                  >
+                    <span className="text-white">{mission.name}</span>
+                    {mission.completed ? (
+                      <svg className="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <div className="w-5 h-5 rounded-full border-2 border-[#a8c7fa]/30" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        );
+
+      case 'attributes':
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <h2 className="text-2xl font-semibold">Attributes</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {nft?.attributes.map((attr, index) => (
+                <div 
+                  key={index}
+                  className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10"
+                >
+                  <div className="text-sm text-[#a8c7fa]/60">{attr.trait_type}</div>
+                  <div className="text-white mt-1">{attr.value}</div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        );
+
+      case 'history':
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <h2 className="text-2xl font-semibold">Recently Viewed NFTs</h2>
+            <div className="space-y-4">
+              {viewHistory.map((historyId) => {
+                const historyNFT = getNFTById(historyId);
+                if (!historyNFT) return null;
+                
+                return (
+                  <motion.div
+                    key={historyId}
+                    whileHover={{ scale: 1.02 }}
+                    className="flex items-center gap-4 p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10 cursor-pointer"
+                    onClick={() => navigate(`/nft/${historyId}`)}
+                  >
+                    <img 
+                      src={historyNFT.image} 
+                      alt={historyNFT.name}
+                      className="w-16 h-16 rounded-lg object-cover"
+                    />
+                    <div>
+                      <h3 className="text-lg font-medium">{historyNFT.name}</h3>
+                      <p className="text-[#a8c7fa]/60">{historyNFT.collection}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        );
     }
   };
 
@@ -240,10 +307,7 @@ export const NFTDetail = () => {
         
         <div className="container mx-auto px-4 py-8 mt-10 relative z-10">
           {/* Back Button */}
-          <motion.div
-            variants={itemVariants}
-            className="mb-8"
-          >
+          <motion.div variants={itemVariants} className="mb-8">
             <Link 
               to="/list"
               className="inline-flex items-center gap-2 text-[#a8c7fa]/60 hover:text-[#a8c7fa] group"
@@ -258,12 +322,8 @@ export const NFTDetail = () => {
           {/* NFT Content */}
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col lg:flex-row gap-12">
-              {/* Left Column */}
-              <motion.div 
-                variants={itemVariants}
-                className="lg:w-1/2 space-y-8"
-              >
-                {/* Image Container with hover effect */}
+              {/* Left Column - NFT Image and Quick Stats */}
+              <motion.div variants={itemVariants} className="lg:w-1/2 space-y-8">
                 <motion.div 
                   className="relative group"
                   whileHover={{ scale: 1.02 }}
@@ -271,8 +331,8 @@ export const NFTDetail = () => {
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-[#7042f88b]/0 to-[#7042f88b]/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
                   <img 
-                    src={nft.image} 
-                    alt={nft.name}
+                    src={nft?.image} 
+                    alt={nft?.name}
                     className="w-full aspect-square object-cover rounded-2xl border border-[#a8c7fa]/10"
                   />
                   <motion.div 
@@ -282,105 +342,83 @@ export const NFTDetail = () => {
                   >
                     <div className="flex justify-between text-sm">
                       <span className="px-3 py-1 bg-black/50 rounded-lg backdrop-blur-sm">
-                        {nft.collection}
+                        {nft?.collection}
                       </span>
                       <span className="px-3 py-1 bg-black/50 rounded-lg backdrop-blur-sm">
-                        #{nft.id.toString().padStart(4, '0')}
+                        #{nft?.id.toString().padStart(4, '0')}
                       </span>
                     </div>
                   </motion.div>
                 </motion.div>
 
                 {/* Quick Stats */}
-                <motion.div 
-                  variants={itemVariants}
-                  className="grid grid-cols-2 gap-4"
-                >
-                  <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10 backdrop-blur-sm">
-                    <div className="text-sm text-[#a8c7fa]/60 mb-1">Mission Amount</div>
-                    <div className="text-xl text-white">{nft.missionAmount}</div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
+                    <div className="text-sm text-[#a8c7fa]/60">Rarity</div>
+                    <div className="text-white mt-1">{nft?.rarity}</div>
                   </div>
-                  <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10 backdrop-blur-sm">
-                    <div className="text-sm text-[#a8c7fa]/60 mb-1">Expires In</div>
-                    <div className="text-xl text-white">{nft.expireDate}</div>
+                  <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
+                    <div className="text-sm text-[#a8c7fa]/60">Blockchain</div>
+                    <div className="text-white mt-1">{nft?.blockchain}</div>
                   </div>
-                </motion.div>
+                </div>
               </motion.div>
 
-              {/* Right Column */}
-              <motion.div 
-                variants={itemVariants}
-                className="lg:w-1/2 space-y-8"
-              >
+              {/* Right Column - Details and Tabs */}
+              <motion.div variants={itemVariants} className="lg:w-1/2 space-y-8">
                 {/* Header */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h1 className="text-4xl font-bold">{nft.name}</h1>
+                    <h1 className="text-4xl font-bold">{nft?.name}</h1>
                     <div className={`px-3 py-1.5 rounded-full text-sm font-medium 
-                      ${nft.status === 'completed' 
+                      ${nft?.status === 'completed' 
                         ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
                         : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                       }`}>
-                      {nft.status === 'completed' ? 'Completed' : 'In Progress'}
-                    </div>
-                  </div>
-                  <p className="text-[#a8c7fa]/60 text-lg">{nft.description}</p>
-                </div>
-
-                {/* Properties */}
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-semibold">Properties</h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
-                      <div className="text-sm text-[#a8c7fa]/60">Rarity</div>
-                      <div className="text-white mt-1">{nft.rarity}</div>
-                    </div>
-                    <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
-                      <div className="text-sm text-[#a8c7fa]/60">Creator</div>
-                      <div className="text-white mt-1">{nft.creator}</div>
-                    </div>
-                    <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
-                      <div className="text-sm text-[#a8c7fa]/60">Collection</div>
-                      <div className="text-white mt-1">{nft.collection}</div>
-                    </div>
-                    <div className="p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10">
-                      <div className="text-sm text-[#a8c7fa]/60">Blockchain</div>
-                      <div className="text-white mt-1">{nft.blockchain}</div>
+                      {nft?.status === 'completed' ? 'Completed' : 'In Progress'}
                     </div>
                   </div>
                 </div>
 
-                {/* Missions Progress */}
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold">Missions</h2>
-                  <div className="space-y-3">
-                    {nft.missions.map((mission, index) => (
-                      <div 
-                        key={index}
-                        className="flex items-center justify-between p-4 bg-[#a8c7fa]/5 rounded-xl border border-[#a8c7fa]/10"
+                {/* Tabs */}
+                <div className="border-b border-[#a8c7fa]/10">
+                  <nav className="flex gap-8">
+                    {(['overview', 'attributes', 'history'] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setSelectedTab(tab)}
+                        className={`pb-4 text-lg font-medium transition-colors relative
+                          ${selectedTab === tab 
+                            ? 'text-[#7042f88b]' 
+                            : 'text-[#a8c7fa]/60 hover:text-[#a8c7fa]'
+                          }`}
                       >
-                        <span className="text-white">{mission.name}</span>
-                        {mission.completed ? (
-                          <svg className="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-[#a8c7fa]/30" />
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        {selectedTab === tab && (
+                          <motion.div
+                            layoutId="activeTab"
+                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#7042f88b]"
+                          />
                         )}
-                      </div>
+                      </button>
                     ))}
-                  </div>
+                  </nav>
                 </div>
 
-                {/* Action Buttons with enhanced animations */}
+                {/* Tab Content */}
+                <AnimatePresence mode="wait">
+                  {renderTabContent()}
+                </AnimatePresence>
+
+                {/* Action Buttons */}
                 <div className="space-y-3 pt-6">
-                  {nft.status !== 'completed' && (
+                  {nft?.status !== 'completed' && (
                     <motion.button 
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full px-6 py-4 bg-[#d8624b]/20 hover:bg-[#d8624b]/40 border border-[#d8624b]/30 
+                      className="w-full px-6 py-4 bg-[#7042f88b]/20 hover:bg-[#7042f88b]/40 border border-[#7042f88b]/30 
                         rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2
-                        hover:shadow-lg hover:shadow-[#d8624b]/20"
+                        hover:shadow-lg hover:shadow-[#7042f88b]/20"
                     >
                       <motion.svg 
                         className="w-5 h-5" 
@@ -393,28 +431,6 @@ export const NFTDetail = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </motion.svg>
                       Mint NFT
-                    </motion.button>
-                  )}
-                  
-                  {nft.status === 'completed' && (
-                    <motion.button 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full px-6 py-4 bg-[#7042f8]/20 hover:bg-[#7042f8]/40 border border-[#7042f8]/30 
-                        rounded-xl text-white/90 transition-all duration-300 flex items-center justify-center gap-2
-                        hover:shadow-lg hover:shadow-[#7042f8]/20"
-                    >
-                      <motion.svg 
-                        className="w-5 h-5" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor"
-                        whileHover={{ x: 5 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                      </motion.svg>
-                      Transfer NFT
                     </motion.button>
                   )}
                 </div>
