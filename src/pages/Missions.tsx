@@ -118,35 +118,24 @@ const MissionCard = React.forwardRef<
   }
 >(({ mission, selectedTokenId, isLoading, onClaim, onClick }, ref) => {
   const isExpired = new Date(mission.expiryDate.toNumber() * 1000) < new Date();
-
-  // Handle claim button click
-  const handleClaimClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onClaim();
-  };
+  const missionAmountValue = parseFloat(ethers.utils.formatEther(mission.missionAmount));
+  const rebornAmountValue = parseFloat(ethers.utils.formatEther(mission.rebornAmount));
+  const hasAnyAmount = missionAmountValue > 0 || rebornAmountValue > 0;
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.3 }}
       onClick={onClick}
-      className={`group bg-slate-800/50 backdrop-blur-sm rounded-xl border transition-all duration-300 overflow-hidden hover:shadow-xl hover:-translate-y-1
+      className={`bg-slate-800/50 backdrop-blur-sm rounded-xl border transition-all duration-300 overflow-hidden hover:shadow-xl cursor-pointer h-full flex flex-col
         ${
           mission.isComplete
             ? "border-green-500/20 hover:border-green-500/40"
             : isExpired
             ? "border-red-500/20 hover:border-red-500/40 opacity-75"
-            : mission.canClaim
-            ? "border-purple-500/20 hover:border-purple-500/40"
             : "border-slate-700/50 hover:border-slate-600/50"
         }`}
     >
-      {/* Mission Image */}
-      <div className="relative h-40 sm:h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden group/image">
         <div
           className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 ${
             isExpired ? "bg-red-900/20" : ""
@@ -155,7 +144,7 @@ const MissionCard = React.forwardRef<
         <img
           src="/src/assets/img/mission.png"
           alt={mission.missionName}
-          className={`w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ${
+          className={`w-full h-full object-cover transition-transform duration-700 group-hover/image:scale-110 ${
             isExpired ? "grayscale" : ""
           }`}
         />
@@ -184,35 +173,37 @@ const MissionCard = React.forwardRef<
         </div>
       </div>
 
-      <div className="p-4 sm:p-6 space-y-4">
+      <div className="flex flex-col flex-1 p-4 sm:p-6">
         {/* Mission Header */}
-        <div>
-          <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-purple-400 transition-colors">
+        <div className="mb-4">
+          <h3 className="text-lg sm:text-xl font-bold text-white hover:text-purple-400 transition-colors">
             {mission.missionName}
           </h3>
           <p className="text-sm text-gray-400">Mission #{mission.missionId}</p>
         </div>
 
         {/* Mission Details */}
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
-            {parseFloat(ethers.utils.formatEther(mission.missionAmount)) > 0 && (
-              <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
-                <p className="text-xs text-gray-400 mb-1">Mission Amount</p>
-                <p className="text-sm sm:text-base font-semibold text-white">
-                  {ethers.utils.formatEther(mission.missionAmount)} AVAX
-                </p>
-              </div>
-            )}
-            {parseFloat(ethers.utils.formatEther(mission.rebornAmount)) > 0 && (
-              <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
-                <p className="text-xs text-gray-400 mb-1">Reborn Amount</p>
-                <p className="text-sm sm:text-base font-semibold text-white">
-                  {ethers.utils.formatEther(mission.rebornAmount)} AVAX
-                </p>
-              </div>
-            )}
-          </div>
+        <div className="space-y-3 flex-1">
+          {hasAnyAmount && (
+            <div className="grid grid-cols-2 gap-2">
+              {missionAmountValue > 0 && (
+                <div className={`bg-slate-700/30 backdrop-blur-sm rounded-lg p-3 ${rebornAmountValue === 0 ? 'col-span-2' : ''}`}>
+                  <p className="text-xs text-gray-400 mb-1">Mission Amount</p>
+                  <p className="text-sm sm:text-base font-semibold text-white">
+                    {missionAmountValue} AVAX
+                  </p>
+                </div>
+              )}
+              {rebornAmountValue > 0 && (
+                <div className={`bg-slate-700/30 backdrop-blur-sm rounded-lg p-3 ${missionAmountValue === 0 ? 'col-span-2' : ''}`}>
+                  <p className="text-xs text-gray-400 mb-1">Reborn Amount</p>
+                  <p className="text-sm sm:text-base font-semibold text-white">
+                    {rebornAmountValue} AVAX
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
             <div className="flex justify-between items-center mb-2">
@@ -262,37 +253,14 @@ const MissionCard = React.forwardRef<
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClick();
-            }}
-            className="flex-1 bg-slate-700/50 hover:bg-slate-700/70 px-4 py-2.5 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2 transition-all duration-300"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            View Details
-          </button>
-
+        <div className="mt-auto pt-4">
           {!mission.isComplete && selectedTokenId && !isExpired && (
             <motion.button
-              onClick={handleClaimClick}
+              onClick={onClaim}
               disabled={!mission.canClaim || isLoading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:from-purple-500/50 disabled:to-purple-600/50 disabled:cursor-not-allowed px-4 py-2.5 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-all duration-300"
+              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:from-purple-500/50 disabled:to-purple-600/50 disabled:cursor-not-allowed px-4 py-2.5 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-all duration-300 mb-2"
             >
               {isLoading ? (
                 <>
@@ -340,9 +308,28 @@ const MissionCard = React.forwardRef<
               )}
             </motion.button>
           )}
+          <button
+            onClick={onClick}
+            className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 px-4 py-2.5 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-all duration-300"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            View Details
+          </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 });
 
