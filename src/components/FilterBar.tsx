@@ -22,8 +22,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   setFilters,
   view,
   setView,
-  isWalletConnected,
-  onConnectWallet,
+
 }) => {
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
     setFilters({ ...filters, [key]: value });

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ethers, BigNumber } from "ethers";
 import { F8__factory } from "../../../typechain-types/factories/F8__factory";
 import { F8 } from "../../../typechain-types/F8";
@@ -218,7 +218,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
   };
 
   // Get all missions with claim status
-  const getMissions = async () => {
+  const getMissions = useCallback(async () => {
     if (!f8Contract || !account) return;
 
     try {
@@ -251,7 +251,6 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
       );
 
       setMissions(formattedMissions);
-
       showNotification('success', 'Missions fetched successfully!');
     } catch (error) {
       const errorMessage = handleError(error);
@@ -260,7 +259,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
       setIsLoading(false);
       setLoadingMessage("");
     }
-  };
+  }, [f8Contract, account, selectedTokenId, showNotification]);
 
   // Load data when tab changes
   useEffect(() => {
@@ -278,7 +277,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
     if (activeTab === "missions" && selectedTokenId) {
       getMissions();
     }
-  }, [selectedTokenId, activeTab]);
+  }, [selectedTokenId, activeTab, getMissions]);
 
   // Create new mission
   const handleCreateMission = async () => {
@@ -345,7 +344,6 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
       getMissions();
     } catch (error: any) {
       console.error("Mission creation error:", error);
-      const errorMessage = error.message || "Failed to create mission";
       showNotification('error', error.message.includes("Only contract owner")
         ? "Only contract owner can create missions"
         : handleError(error));

@@ -6,7 +6,6 @@ import { F8__factory } from "../../typechain-types/factories/F8__factory";
 import { F8 } from "../../typechain-types/F8";
 import { Toast } from "../components/common/Toast";
 import { handleError } from "../utils/validation";
-import { MissionDetail } from "../components/MissionDetail";
 
 const F8_ADDRESS = "0x4684059c10Cc9b9E3013c953182E2e097B8d089d";
 
@@ -24,13 +23,6 @@ interface ContextType {
   provider: ethers.providers.Web3Provider | null;
   account: string | null;
 }
-
-const sortOptions = [
-  { id: "newest", label: "Newest First" },
-  { id: "oldest", label: "Oldest First" },
-  { id: "reward-high", label: "Highest Reward" },
-  { id: "reward-low", label: "Lowest Reward" },
-];
 
 const formatExpiryDate = (timestamp: number) => {
   const date = new Date(timestamp * 1000);
@@ -343,8 +335,8 @@ export const Missions: React.FC = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error">("success");
   const [showToast, setShowToast] = useState(false);
-  const [selectedTokenId, setSelectedTokenId] = useState<string>("");
-  const [activeSort, setActiveSort] = useState("newest");
+  const [selectedTokenId] = useState<string>("");
+  const [activeSort] = useState("newest");
   const hasFetchedRef = useRef(false);
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(
     null

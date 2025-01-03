@@ -15,7 +15,7 @@ export const NFTDetail = () => {
   useScrollToTop();
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getNFTById, setNFTData, setActiveNFT, activeNFT, viewHistory } = useNFT();
+  const { getNFTById, setNFTData, setActiveNFT, viewHistory } = useNFT();
   const [nft, setNft] = useState<NFTMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
