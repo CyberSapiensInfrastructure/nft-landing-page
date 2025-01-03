@@ -105,15 +105,15 @@ const EmptyState = ({ message }: { message: string }) => (
   </motion.div>
 );
 
-const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim, onClick }: { 
-  mission: MissionData; 
+const MissionCard = React.forwardRef<HTMLDivElement, {
+  mission: MissionData;
   selectedTokenId: string;
   isLoading: boolean;
   onClaim: () => void;
   onClick: () => void;
-}) => {
+}>(({ mission, selectedTokenId, isLoading, onClaim, onClick }, ref) => {
   const isExpired = new Date(mission.expiryDate.toNumber() * 1000) < new Date();
-  
+
   // Handle claim button click
   const handleClaimClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -122,11 +122,13 @@ const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim, onClick }: 
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
+      onClick={onClick}
       className={`group bg-slate-800/50 backdrop-blur-sm rounded-xl border transition-all duration-300 overflow-hidden hover:shadow-xl hover:-translate-y-1
         ${mission.isComplete 
           ? 'border-green-500/20 hover:border-green-500/40' 
@@ -195,7 +197,7 @@ const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim, onClick }: 
             <div className="flex justify-between items-center mb-2">
               <p className="text-xs text-gray-400">Time Remaining</p>
               <span className={`text-xs font-medium ${
-                new Date(mission.expiryDate.toNumber() * 1000) < new Date()
+                isExpired
                   ? 'text-red-400'
                   : new Date(mission.expiryDate.toNumber() * 1000).getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000
                     ? 'text-yellow-400'
@@ -207,7 +209,7 @@ const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim, onClick }: 
             <div className="w-full bg-slate-600/30 rounded-full h-1.5">
               <div 
                 className={`h-full rounded-full transition-all duration-300 ${
-                  new Date(mission.expiryDate.toNumber() * 1000) < new Date()
+                  isExpired
                     ? 'bg-red-500'
                     : new Date(mission.expiryDate.toNumber() * 1000).getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000
                       ? 'bg-yellow-500'
@@ -224,7 +226,10 @@ const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim, onClick }: 
         {/* Action Buttons */}
         <div className="flex gap-2">
           <button
-            onClick={onClick}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick();
+            }}
             className="flex-1 bg-slate-700/50 hover:bg-slate-700/70 px-4 py-2.5 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2 transition-all duration-300"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,7 +238,7 @@ const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim, onClick }: 
             View Details
           </button>
 
-          {!mission.isComplete && selectedTokenId && (
+          {!mission.isComplete && selectedTokenId && !isExpired && (
             <motion.button
               onClick={handleClaimClick}
               disabled={!mission.canClaim || isLoading}
@@ -271,7 +276,7 @@ const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim, onClick }: 
       </div>
     </motion.div>
   );
-};
+});
 
 export const Missions: React.FC = () => {
   const { provider, account } = useOutletContext<ContextType>();
@@ -474,59 +479,7 @@ export const Missions: React.FC = () => {
           </motion.div>
         ) : (
           <>
-            {/* Controls Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mb-8 space-y-6"
-            >
-              {/* Token ID Input and Sort */}
-              <div className="flex flex-col md:flex-row gap-4 items-center">
-                <div className="flex-1 w-full">
-                  <div className="bg-gradient-to-r from-purple-500/5 via-slate-800/50 to-purple-500/5 rounded-xl border border-purple-500/10 p-6 backdrop-blur-xl">
-                    <label className="block text-sm font-medium text-gray-400 mb-2">
-                      Enter your NFT Token ID to check mission eligibility
-                    </label>
-                    <div className="flex gap-4">
-                      <input
-                        type="text"
-                        value={selectedTokenId}
-                        onChange={(e) => setSelectedTokenId(e.target.value)}
-                        placeholder="Enter Token ID"
-                        className="flex-1 p-2 rounded-lg bg-slate-700/50 text-white border border-purple-500/20 focus:border-purple-500 focus:outline-none placeholder-gray-500"
-                      />
-                      <button
-                        onClick={getMissions}
-                        disabled={!selectedTokenId || isLoading}
-                        className="bg-purple-500 hover:bg-purple-600 disabled:bg-purple-500/50 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/25"
-                      >
-                        {isLoading ? (
-                          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          'Check'
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="w-full md:w-64">
-                  <select
-                    value={activeSort}
-                    onChange={(e) => setActiveSort(e.target.value)}
-                    className="w-full p-3 rounded-lg bg-gradient-to-r from-purple-500/5 via-slate-800/50 to-purple-500/5 border border-purple-500/10 text-white focus:outline-none focus:border-purple-500 backdrop-blur-xl"
-                  >
-                    {sortOptions.map((option) => (
-                      <option key={option.id} value={option.id} className="bg-slate-800">
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </motion.div>
-
+           
             {/* Missions Grid */}
             <div className="space-y-8">
               {/* Active Missions */}
