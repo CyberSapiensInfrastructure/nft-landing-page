@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { NFTGrid } from "../components/NFTGrid";
@@ -15,11 +15,12 @@ const F8_ADDRESS = "0x4684059c10Cc9b9E3013c953182E2e097B8d089d";
 const NFTListPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedNFT, setSelectedNFT] = useState<NFT | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [f8Contract, setF8Contract] = useState<F8 | null>(null);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Get initial values from URL or use defaults
   const [view, setView] = useState<"list" | "grid">(
@@ -31,38 +32,62 @@ const NFTListPage: React.FC = () => {
     sortBy: searchParams.get("sort") || "newest",
   });
 
+  const handleConnectWallet = useCallback(async () => {
+    if (window.ethereum) {
+      try {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const contract = F8__factory.connect(F8_ADDRESS, signer);
+        setF8Contract(contract);
+        setIsWalletConnected(true);
+      } catch (error) {
+        console.error("Error connecting wallet:", error);
+      }
+    }
+  }, []);
+
   // Initialize contract and check wallet connection
   useEffect(() => {
     const initContract = async () => {
-      if (window.ethereum) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const accounts = await window.ethereum.request({
-          method: "eth_accounts",
-        });
-        setIsWalletConnected(accounts.length > 0);
+      if (!window.ethereum || isInitialized) return;
 
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const accounts = await window.ethereum.request({
+        method: "eth_accounts",
+      });
+      
+      setIsWalletConnected(accounts.length > 0);
+
+      if (accounts.length > 0) {
+        const signer = provider.getSigner();
+        const contract = F8__factory.connect(F8_ADDRESS, signer);
+        setF8Contract(contract);
+      }
+
+      // Listen for account changes
+      const handleAccountsChanged = (accounts: string[]) => {
+        setIsWalletConnected(accounts.length > 0);
         if (accounts.length > 0) {
           const signer = provider.getSigner();
           const contract = F8__factory.connect(F8_ADDRESS, signer);
           setF8Contract(contract);
+        } else {
+          setF8Contract(null);
+          setNfts([]);
         }
+      };
 
-        // Listen for account changes
-        window.ethereum.on("accountsChanged", (accounts: string[]) => {
-          setIsWalletConnected(accounts.length > 0);
-          if (accounts.length > 0) {
-            const signer = provider.getSigner();
-            const contract = F8__factory.connect(F8_ADDRESS, signer);
-            setF8Contract(contract);
-          } else {
-            setF8Contract(null);
-            setNfts([]);
-          }
-        });
-      }
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+      setIsInitialized(true);
+
+      return () => {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+      };
     };
+
     initContract();
-  }, []);
+  }, [isInitialized]);
 
   // Update URL when filters change
   useEffect(() => {
@@ -77,132 +102,147 @@ const NFTListPage: React.FC = () => {
   }, [view, filters, setSearchParams]);
 
   // Fetch NFTs when contract is available
-  useEffect(() => {
-    const fetchNFTs = async () => {
-      if (!f8Contract || !isWalletConnected) {
-        setIsLoading(false);
-        return;
-      }
+  const fetchNFTs = useCallback(async () => {
+    if (!f8Contract || !isWalletConnected) {
+      setIsLoading(false);
+      return;
+    }
 
-      setIsLoading(true);
-      setLoadingMessage("Fetching your NFTs...");
+    setIsLoading(true);
+    setLoadingMessage("Fetching your NFTs...");
 
-      try {
-        const accounts = await window.ethereum.request({
-          method: "eth_accounts",
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_accounts",
+      });
+      if (accounts.length > 0) {
+        const tokenIds = await f8Contract.getList(accounts[0]);
+
+        const metadataPromises = tokenIds.map(async (tokenId: BigNumber) => {
+          const uri = await f8Contract.tokenURI(tokenId);
+          try {
+            const proxyUrl = "https://api.allorigins.win/get?url=";
+            const response = await fetch(
+              proxyUrl + encodeURIComponent(`${uri}.json`)
+            );
+            const proxyData = await response.json();
+            const metadata = JSON.parse(proxyData.contents);
+
+            return {
+              id: parseInt(tokenId.toString()),
+              name: metadata.name || `F8 NFT #${tokenId}`,
+              description: metadata.description || "Providence NFT",
+              image:
+                metadata.image ||
+                `http://cybersapiens.xyz/f8/img/${tokenId}.png`,
+              status: "completed" as const,
+              price: 0,
+              expireDate: "31.12.2024 - 23:59:59",
+              missionAmount: 0,
+              attributes: metadata.attributes || [],
+            } satisfies NFT;
+          } catch (error) {
+            console.error(
+              `Error fetching metadata for token ${tokenId}:`,
+              error
+            );
+            return {
+              id: parseInt(tokenId.toString()),
+              name: `F8 NFT #${tokenId}`,
+              description: "Providence NFT",
+              image: `http://cybersapiens.xyz/f8/img/${tokenId}.png`,
+              status: "completed" as const,
+              price: 0,
+              expireDate: "31.12.2024 - 23:59:59",
+              missionAmount: 0,
+              attributes: [],
+            } satisfies NFT;
+          }
         });
-        if (accounts.length > 0) {
-          const tokenIds = await f8Contract.getList(accounts[0]);
 
-          const metadataPromises = tokenIds.map(async (tokenId: BigNumber) => {
-            const uri = await f8Contract.tokenURI(tokenId);
-            try {
-              const proxyUrl = "https://api.allorigins.win/get?url=";
-              const response = await fetch(
-                proxyUrl + encodeURIComponent(`${uri}.json`)
-              );
-              const proxyData = await response.json();
-              const metadata = JSON.parse(proxyData.contents);
-
-              return {
-                id: parseInt(tokenId.toString()),
-                name: metadata.name || `F8 NFT #${tokenId}`,
-                description: metadata.description || "Providence NFT",
-                image:
-                  metadata.image ||
-                  `http://cybersapiens.xyz/f8/img/${tokenId}.png`,
-                status: "completed" as const,
-                price: 0,
-                expireDate: "31.12.2024 - 23:59:59",
-                missionAmount: 0,
-                attributes: metadata.attributes || [],
-              } satisfies NFT;
-            } catch (error) {
-              console.error(
-                `Error fetching metadata for token ${tokenId}:`,
-                error
-              );
-              return {
-                id: parseInt(tokenId.toString()),
-                name: `F8 NFT #${tokenId}`,
-                description: "Providence NFT",
-                image: `http://cybersapiens.xyz/f8/img/${tokenId}.png`,
-                status: "completed" as const,
-                price: 0,
-                expireDate: "31.12.2024 - 23:59:59",
-                missionAmount: 0,
-                attributes: [],
-              } satisfies NFT;
-            }
-          });
-
-          const metadata = await Promise.all(metadataPromises);
-          setNfts(metadata);
-        }
-      } catch (error) {
-        console.error("Error fetching NFTs:", error);
-      } finally {
-        setIsLoading(false);
-        setLoadingMessage("");
+        const metadata = await Promise.all(metadataPromises);
+        setNfts(metadata);
       }
-    };
-
-    fetchNFTs();
+    } catch (error) {
+      console.error("Error fetching NFTs:", error);
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
+    }
   }, [f8Contract, isWalletConnected]);
 
-  // Filter NFTs based on current filters
-  const filteredNFTs = nfts
-    .filter((nft) => {
-      if (filters.status !== "all" && nft.status !== filters.status) {
-        return false;
-      }
-      if (
-        filters.category !== "all" &&
-        nft.name.toLowerCase() !== filters.category.toLowerCase()
-      ) {
-        return false;
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      switch (filters.sortBy) {
-        case "oldest":
-          return a.id - b.id;
-        case "price_high_low":
-          return b.price - a.price;
-        case "price_low_high":
-          return a.price - b.price;
-        default: // newest
-          return b.id - a.id;
-      }
-    });
-
-  const handleConnectWallet = async () => {
-    if (window.ethereum) {
-      try {
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const contract = F8__factory.connect(F8_ADDRESS, signer);
-        setF8Contract(contract);
-        setIsWalletConnected(true);
-      } catch (error) {
-        console.error("Error connecting wallet:", error);
-      }
+  useEffect(() => {
+    if (isWalletConnected && f8Contract) {
+      fetchNFTs();
     }
-  };
+  }, [isWalletConnected, f8Contract, fetchNFTs]);
 
-  const handleNFTSelect = (nft: NFT) => {
+  // Filter NFTs based on current filters
+  const filteredNFTs = useMemo(() => 
+    nfts
+      .filter((nft) => {
+        if (filters.status !== "all" && nft.status !== filters.status) {
+          return false;
+        }
+        if (
+          filters.category !== "all" &&
+          nft.name.toLowerCase() !== filters.category.toLowerCase()
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        switch (filters.sortBy) {
+          case "oldest":
+            return a.id - b.id;
+          case "price_high_low":
+            return b.price - a.price;
+          case "price_low_high":
+            return a.price - b.price;
+          default: // newest
+            return b.id - a.id;
+        }
+      })
+  , [nfts, filters]);
+
+  const handleNFTSelect = useCallback((nft: NFT) => {
     setSelectedNFT(nft);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setSelectedNFT(null);
-  };
+  }, []);
 
-  return (
+  const handleViewChange = useCallback((newView: "list" | "grid") => {
+    setView(newView);
+  }, []);
+
+  const handleFilterChange = useCallback((newFilters: typeof filters) => {
+    setFilters(newFilters);
+  }, []);
+
+  const renderNFTContent = useMemo(() => (
+    <motion.div
+      key={view} // Add key to force remount on view change
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <NFTGrid
+        nfts={filteredNFTs}
+        isLoading={isLoading}
+        onSelect={handleNFTSelect}
+        selectedNFTId={selectedNFT?.id}
+        view={view}
+      />
+    </motion.div>
+  ), [filteredNFTs, isLoading, handleNFTSelect, selectedNFT?.id, view]);
+
+  const pageContent = useMemo(() => (
     <div className="min-h-screen py-20">
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isLoading && (
           <LoadingAnimation
             message={loadingMessage || "Loading your NFTs..."}
@@ -259,6 +299,12 @@ const NFTListPage: React.FC = () => {
             <p className="text-gray-400 mb-6">
               Connect your wallet to view and participate in missions
             </p>
+            <button
+              onClick={handleConnectWallet}
+              className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+            >
+              Connect Wallet
+            </button>
           </motion.div>
         ) : (
           <>
@@ -271,27 +317,17 @@ const NFTListPage: React.FC = () => {
               <h1 className="text-4xl font-bold mb-6">nft collection</h1>
               <FilterBar
                 filters={filters}
-                setFilters={setFilters}
+                setFilters={handleFilterChange}
                 view={view}
-                setView={setView}
+                setView={handleViewChange}
                 isWalletConnected={isWalletConnected}
                 onConnectWallet={handleConnectWallet}
               />
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <NFTGrid
-                nfts={filteredNFTs}
-                isLoading={isLoading}
-                onSelect={handleNFTSelect}
-                selectedNFTId={selectedNFT?.id}
-                view={view}
-              />
-            </motion.div>
+            <AnimatePresence mode="wait" initial={false}>
+              {renderNFTContent}
+            </AnimatePresence>
           </>
         )}
 
@@ -306,7 +342,21 @@ const NFTListPage: React.FC = () => {
         </AnimatePresence>
       </div>
     </div>
-  );
+  ), [
+    isLoading,
+    loadingMessage,
+    isWalletConnected,
+    handleConnectWallet,
+    filters,
+    view,
+    handleFilterChange,
+    handleViewChange,
+    renderNFTContent,
+    selectedNFT,
+    handleCloseModal
+  ]);
+
+  return pageContent;
 };
 
 export default NFTListPage;

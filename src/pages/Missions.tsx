@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useOutletContext } from 'react-router-dom';
 import { ethers } from 'ethers';
 import { F8__factory } from "../../typechain-types/factories/F8__factory";
-import { F8 } from "typechain-types/F8";
+import { F8 } from "../../typechain-types/F8";
 import { Toast } from "../components/common/Toast";
 import { handleError } from "../utils/validation";
 

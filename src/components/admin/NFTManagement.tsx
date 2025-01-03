@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ethers, BigNumber } from "ethers";
-import { F8__factory } from "typechain-types/factories/F8__factory";
-import { F8 } from "typechain-types/F8";
+import { F8__factory } from "../../../typechain-types/factories/F8__factory";
+import { F8 } from "../../../typechain-types/F8";
 import { FormInput } from "../common/FormInput";
 import { LoadingOverlay } from "../common/LoadingOverlay";
 import { Toast } from "../common/Toast";
