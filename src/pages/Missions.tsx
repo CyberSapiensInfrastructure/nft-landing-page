@@ -6,6 +6,7 @@ import { F8__factory } from "../../typechain-types/factories/F8__factory";
 import { F8 } from "../../typechain-types/F8";
 import { Toast } from "../components/common/Toast";
 import { handleError } from "../utils/validation";
+import { MissionDetail } from "../components/MissionDetail";
 
 const F8_ADDRESS = '0x4684059c10Cc9b9E3013c953182E2e097B8d089d';
 
@@ -30,6 +31,39 @@ const sortOptions = [
   { id: 'reward-high', label: 'Highest Reward' },
   { id: 'reward-low', label: 'Lowest Reward' },
 ];
+
+const formatExpiryDate = (timestamp: number) => {
+  const date = new Date(timestamp * 1000);
+  const now = new Date();
+  const diffTime = date.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) {
+    return "Expired";
+  }
+  
+  if (diffDays === 0) {
+    return "Expires Today";
+  }
+  
+  if (diffDays === 1) {
+    return "Expires Tomorrow";
+  }
+  
+  if (diffDays <= 7) {
+    return `Expires in ${diffDays} days`;
+  }
+  
+  const options: Intl.DateTimeFormatOptions = { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  
+  return `Expires on ${date.toLocaleDateString('en-US', options)}`;
+};
 
 const LoadingCard = () => (
   <motion.div
@@ -71,12 +105,21 @@ const EmptyState = ({ message }: { message: string }) => (
   </motion.div>
 );
 
-const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim }: { 
+const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim, onClick }: { 
   mission: MissionData; 
   selectedTokenId: string;
   isLoading: boolean;
   onClaim: () => void;
+  onClick: () => void;
 }) => {
+  const isExpired = new Date(mission.expiryDate.toNumber() * 1000) < new Date();
+  
+  // Handle claim button click
+  const handleClaimClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClaim();
+  };
+
   return (
     <motion.div
       layout
@@ -84,32 +127,41 @@ const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim }: {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
-      className={`group bg-slate-800/50 backdrop-blur-sm rounded-xl border transition-all duration-300 overflow-hidden
+      className={`group bg-slate-800/50 backdrop-blur-sm rounded-xl border transition-all duration-300 overflow-hidden hover:shadow-xl hover:-translate-y-1
         ${mission.isComplete 
           ? 'border-green-500/20 hover:border-green-500/40' 
-          : mission.canClaim 
-            ? 'border-purple-500/20 hover:border-purple-500/40'
-            : 'border-slate-700/50 hover:border-slate-600/50'
+          : isExpired
+            ? 'border-red-500/20 hover:border-red-500/40 opacity-75'
+            : mission.canClaim 
+              ? 'border-purple-500/20 hover:border-purple-500/40'
+              : 'border-slate-700/50 hover:border-slate-600/50'
         }`}
     >
       {/* Mission Image */}
-      <div className="relative h-48 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+      <div className="relative h-40 sm:h-48 overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 ${isExpired ? 'bg-red-900/20' : ''}`} />
         <img 
           src="/src/assets/img/mission.png"
           alt={mission.missionName}
-          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+          className={`w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ${isExpired ? 'grayscale' : ''}`}
         />
         <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
           <span className={`px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm
             ${mission.isComplete 
               ? 'bg-green-500/20 text-green-500 border border-green-500/20' 
-              : 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/20'
+              : isExpired
+                ? 'bg-red-500/20 text-red-400 border border-red-500/20'
+                : 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/20'
             }`}
           >
-            {mission.isComplete ? 'Completed' : 'Active'}
+            {mission.isComplete 
+              ? 'Completed' 
+              : isExpired
+                ? 'Expired'
+                : 'Active'
+            }
           </span>
-          {selectedTokenId && mission.canClaim && (
+          {selectedTokenId && mission.canClaim && !isExpired && (
             <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 border border-purple-500/20 backdrop-blur-sm">
               Eligible for Claim
             </span>
@@ -117,10 +169,10 @@ const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim }: {
         </div>
       </div>
 
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         {/* Mission Header */}
         <div>
-          <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors">
+          <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-purple-400 transition-colors">
             {mission.missionName}
           </h3>
           <p className="text-sm text-gray-400">Mission #{mission.missionId}</p>
@@ -128,49 +180,100 @@ const MissionCard = ({ mission, selectedTokenId, isLoading, onClaim }: {
 
         {/* Mission Details */}
         <div className="space-y-3">
-          <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-slate-700/30 backdrop-blur-sm">
-            <span className="text-gray-400">Mission Amount</span>
-            <span className="text-white font-medium">{ethers.utils.formatEther(mission.missionAmount)} AVAX</span>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
+              <p className="text-xs text-gray-400 mb-1">Mission Amount</p>
+              <p className="text-sm sm:text-base font-semibold text-white">{ethers.utils.formatEther(mission.missionAmount)} AVAX</p>
+            </div>
+            <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
+              <p className="text-xs text-gray-400 mb-1">Reborn Amount</p>
+              <p className="text-sm sm:text-base font-semibold text-white">{ethers.utils.formatEther(mission.rebornAmount)} AVAX</p>
+            </div>
           </div>
-          <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-slate-700/30 backdrop-blur-sm">
-            <span className="text-gray-400">Reborn Amount</span>
-            <span className="text-white font-medium">{ethers.utils.formatEther(mission.rebornAmount)} AVAX</span>
-          </div>
-          <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-slate-700/30 backdrop-blur-sm">
-            <span className="text-gray-400">Expires</span>
-            <span className="text-white font-medium">
-              {new Date(mission.expiryDate.toNumber() * 1000).toLocaleDateString()}
-            </span>
+
+          <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-xs text-gray-400">Time Remaining</p>
+              <span className={`text-xs font-medium ${
+                new Date(mission.expiryDate.toNumber() * 1000) < new Date()
+                  ? 'text-red-400'
+                  : new Date(mission.expiryDate.toNumber() * 1000).getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000
+                    ? 'text-yellow-400'
+                    : 'text-white'
+              }`}>
+                {formatExpiryDate(mission.expiryDate.toNumber())}
+              </span>
+            </div>
+            <div className="w-full bg-slate-600/30 rounded-full h-1.5">
+              <div 
+                className={`h-full rounded-full transition-all duration-300 ${
+                  new Date(mission.expiryDate.toNumber() * 1000) < new Date()
+                    ? 'bg-red-500'
+                    : new Date(mission.expiryDate.toNumber() * 1000).getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000
+                      ? 'bg-yellow-500'
+                      : 'bg-purple-500'
+                }`}
+                style={{
+                  width: `${Math.max(0, Math.min(100, (new Date(mission.expiryDate.toNumber() * 1000).getTime() - new Date().getTime()) / (7 * 24 * 60 * 60 * 1000) * 100))}%`
+                }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Claim Button */}
-        {!mission.isComplete && selectedTokenId && (
-          <motion.button
-            onClick={onClaim}
-            disabled={!mission.canClaim || isLoading}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="mt-4 w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:from-purple-500/50 disabled:to-purple-600/50 disabled:cursor-not-allowed px-4 py-3 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-all duration-300"
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={onClick}
+            className="flex-1 bg-slate-700/50 hover:bg-slate-700/70 px-4 py-2.5 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2 transition-all duration-300"
           >
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Claiming...
-              </>
-            ) : (
-              <>
-                {mission.canClaim ? 'Claim Reward' : 'Not Eligible'}
-              </>
-            )}
-          </motion.button>
-        )}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            View Details
+          </button>
+
+          {!mission.isComplete && selectedTokenId && (
+            <motion.button
+              onClick={handleClaimClick}
+              disabled={!mission.canClaim || isLoading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:from-purple-500/50 disabled:to-purple-600/50 disabled:cursor-not-allowed px-4 py-2.5 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-all duration-300"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Claiming...
+                </>
+              ) : (
+                <>
+                  {mission.canClaim ? (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Claim
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Not Eligible
+                    </>
+                  )}
+                </>
+              )}
+            </motion.button>
+          )}
+        </div>
       </div>
     </motion.div>
   );
 };
 
-const Missions: React.FC = () => {
+export const Missions: React.FC = () => {
   const { provider, account } = useOutletContext<ContextType>();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -183,6 +286,7 @@ const Missions: React.FC = () => {
   const [selectedTokenId, setSelectedTokenId] = useState<string>("");
   const [activeSort, setActiveSort] = useState('newest');
   const hasFetchedRef = useRef(false);
+  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
 
   // Initialize contract when provider is available
   useEffect(() => {
@@ -282,10 +386,10 @@ const Missions: React.FC = () => {
         sorted.sort((a, b) => a.missionId.localeCompare(b.missionId));
         break;
       case 'reward-high':
-        sorted.sort((a, b) => b.rebornAmount.sub(a.rebornAmount).toNumber());
+        sorted.sort((a, b) => (b.rebornAmount.gt(a.rebornAmount) ? 1 : -1));
         break;
       case 'reward-low':
-        sorted.sort((a, b) => a.rebornAmount.sub(b.rebornAmount).toNumber());
+        sorted.sort((a, b) => (a.rebornAmount.gt(b.rebornAmount) ? 1 : -1));
         break;
     }
 
@@ -424,36 +528,101 @@ const Missions: React.FC = () => {
             </motion.div>
 
             {/* Missions Grid */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              <AnimatePresence mode="popLayout">
-                {isLoading ? (
-                  <>
-                    <LoadingCard />
-                    <LoadingCard />
-                    <LoadingCard />
-                  </>
-                ) : filteredMissions.length > 0 ? (
-                  filteredMissions.map((mission) => (
-                    <MissionCard
-                      key={mission.missionId}
-                      mission={mission}
-                      selectedTokenId={selectedTokenId}
-                      isLoading={isLoading}
-                      onClaim={() => claimMissionReward(mission.missionId, selectedTokenId)}
-                    />
-                  ))
-                ) : (
-                  <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                    <EmptyState message="No missions available at the moment" />
-                  </div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+            <div className="space-y-8">
+              {/* Active Missions */}
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                  Active Missions
+                </h2>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
+                >
+                  <AnimatePresence mode="popLayout">
+                    {isLoading ? (
+                      <>
+                        <LoadingCard />
+                        <LoadingCard />
+                        <LoadingCard />
+                      </>
+                    ) : filteredMissions.filter(m => 
+                        !m.isComplete && 
+                        new Date(m.expiryDate.toNumber() * 1000) > new Date()
+                      ).length > 0 ? (
+                      filteredMissions
+                        .filter(m => 
+                          !m.isComplete && 
+                          new Date(m.expiryDate.toNumber() * 1000) > new Date()
+                        )
+                        .map((mission) => (
+                          <MissionCard
+                            key={mission.missionId}
+                            mission={mission}
+                            selectedTokenId={selectedTokenId}
+                            isLoading={isLoading}
+                            onClaim={() => claimMissionReward(mission.missionId, selectedTokenId)}
+                            onClick={() => setSelectedMissionId(mission.missionId)}
+                          />
+                        ))
+                    ) : (
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-3">
+                        <EmptyState message="No active missions available at the moment" />
+                      </div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </div>
+
+              {/* Expired & Completed Missions */}
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-red-500"></span>
+                  Expired & Completed Missions
+                </h2>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
+                >
+                  <AnimatePresence mode="popLayout">
+                    {isLoading ? (
+                      <>
+                        <LoadingCard />
+                        <LoadingCard />
+                        <LoadingCard />
+                      </>
+                    ) : filteredMissions.filter(m => 
+                        m.isComplete || 
+                        new Date(m.expiryDate.toNumber() * 1000) <= new Date()
+                      ).length > 0 ? (
+                      filteredMissions
+                        .filter(m => 
+                          m.isComplete || 
+                          new Date(m.expiryDate.toNumber() * 1000) <= new Date()
+                        )
+                        .map((mission) => (
+                          <MissionCard
+                            key={mission.missionId}
+                            mission={mission}
+                            selectedTokenId={selectedTokenId}
+                            isLoading={isLoading}
+                            onClaim={() => claimMissionReward(mission.missionId, selectedTokenId)}
+                            onClick={() => setSelectedMissionId(mission.missionId)}
+                          />
+                        ))
+                    ) : (
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-3">
+                        <EmptyState message="No expired or completed missions" />
+                      </div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </div>
+            </div>
           </>
         )}
       </div>
@@ -483,6 +652,170 @@ const Missions: React.FC = () => {
           onClose={() => setShowToast(false)}
         />
       )}
+
+      {/* Mission Detail Modal */}
+      <AnimatePresence>
+        {selectedMissionId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedMissionId(null)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
+            >
+              {/* Header */}
+              <div className="sticky top-0 bg-slate-800/80 backdrop-blur-sm border-b border-slate-700 p-6 flex justify-between items-center z-10">
+                <h2 className="text-2xl font-bold text-white">Mission Details</h2>
+                <button
+                  onClick={() => setSelectedMissionId(null)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-8">
+                {(() => {
+                  const mission = filteredMissions.find(m => m.missionId === selectedMissionId);
+                  if (!mission) return null;
+
+                  const isExpired = new Date(mission.expiryDate.toNumber() * 1000) < new Date();
+
+                  return (
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-xl font-semibold text-white">{mission.missionName}</h3>
+                          <p className="text-sm text-gray-400 mt-1">Mission #{mission.missionId}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          mission.isComplete 
+                            ? "bg-green-500/20 text-green-500" 
+                            : isExpired
+                              ? "bg-red-500/20 text-red-400"
+                              : "bg-yellow-500/20 text-yellow-500"
+                        }`}>
+                          {mission.isComplete 
+                            ? "Completed" 
+                            : isExpired
+                              ? "Expired"
+                              : "Active"
+                          }
+                        </span>
+                      </div>
+
+                      {/* Mission Image */}
+                      <div className="relative h-48 rounded-xl overflow-hidden">
+                        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 ${isExpired ? 'bg-red-900/20' : ''}`} />
+                        <img 
+                          src="/src/assets/img/mission.png"
+                          alt={mission.missionName}
+                          className={`w-full h-full object-cover ${isExpired ? 'grayscale' : ''}`}
+                        />
+                      </div>
+
+                      {/* Mission Stats */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-slate-700/50 rounded-xl p-4 space-y-1">
+                          <p className="text-sm text-gray-400">Mission Amount</p>
+                          <p className="text-lg font-semibold text-white">
+                            {ethers.utils.formatEther(mission.missionAmount)} AVAX
+                          </p>
+                        </div>
+                        <div className="bg-slate-700/50 rounded-xl p-4 space-y-1">
+                          <p className="text-sm text-gray-400">Reborn Amount</p>
+                          <p className="text-lg font-semibold text-white">
+                            {ethers.utils.formatEther(mission.rebornAmount)} AVAX
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Expiry Status */}
+                      <div className={`bg-slate-700/50 rounded-xl p-6 space-y-3 ${
+                        isExpired ? 'border border-red-500/20' : ''
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-gray-400">Mission Status</p>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            isExpired
+                              ? 'bg-red-500/20 text-red-400'
+                              : new Date(mission.expiryDate.toNumber() * 1000).getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000
+                                ? 'bg-yellow-500/20 text-yellow-400'
+                                : 'bg-purple-500/20 text-purple-400'
+                          }`}>
+                            {formatExpiryDate(mission.expiryDate.toNumber())}
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="w-full bg-slate-600/30 rounded-full h-2">
+                            <div 
+                              className={`h-full rounded-full ${
+                                isExpired
+                                  ? 'bg-red-500'
+                                  : new Date(mission.expiryDate.toNumber() * 1000).getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000
+                                    ? 'bg-yellow-500'
+                                    : 'bg-purple-500'
+                              }`}
+                              style={{
+                                width: `${Math.max(0, Math.min(100, (new Date(mission.expiryDate.toNumber() * 1000).getTime() - new Date().getTime()) / (7 * 24 * 60 * 60 * 1000) * 100))}%`
+                              }}
+                            />
+                          </div>
+                          <p className="text-xs text-gray-400 text-center">
+                            {isExpired ? (
+                              <span className="text-red-400">Mission has expired</span>
+                            ) : (
+                              `Exact expiry: ${new Date(mission.expiryDate.toNumber() * 1000).toLocaleString('en-US', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}`
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Claim Button */}
+                      {!mission.isComplete && selectedTokenId && !isExpired && (
+                        <button
+                          onClick={() => claimMissionReward(mission.missionId, selectedTokenId)}
+                          disabled={!mission.canClaim || isLoading}
+                          className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:from-purple-500/50 disabled:to-purple-600/50 disabled:cursor-not-allowed px-4 py-3 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-all duration-300"
+                        >
+                          {isLoading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              Claiming...
+                            </>
+                          ) : (
+                            <>
+                              {mission.canClaim ? 'Claim Reward' : 'Not Eligible'}
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
