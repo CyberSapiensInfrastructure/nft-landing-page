@@ -92,18 +92,20 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
         const signer = provider.getSigner();
         const signerAddress = await signer.getAddress();
         console.log("Signer address:", signerAddress);
-        
+
         const contract = F8__factory.connect(F8_ADDRESS, signer);
         console.log("Contract initialized");
-        
+
         // Test contract connection
         const owner = await contract.owner();
         console.log("Contract owner:", owner);
-        
+
         setF8Contract(contract);
       } catch (error) {
         console.error("Error initializing contract:", error);
-        setToastMessage("Failed to initialize contract. Please check your wallet connection.");
+        setToastMessage(
+          "Failed to initialize contract. Please check your wallet connection."
+        );
         setToastType("error");
         setShowToast(true);
       }
@@ -307,7 +309,9 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
   const handleCreateMission = async () => {
     if (!f8Contract) {
       console.error("F8 contract is not initialized");
-      setToastMessage("Contract not initialized. Please check your wallet connection.");
+      setToastMessage(
+        "Contract not initialized. Please check your wallet connection."
+      );
       setToastType("error");
       setShowToast(true);
       return;
@@ -315,28 +319,38 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
 
     try {
       setIsLoading(true);
-      setLoadingMessage("Creating new mission...");
+      setLoadingMessage("Checking permissions...");
 
       // First check if the connected account is the owner
       const contractOwner = await f8Contract.owner();
-      console.log("Contract owner:", contractOwner);
-      console.log("Connected account:", account);
-
       if (contractOwner.toLowerCase() !== account?.toLowerCase()) {
-        throw new Error("Only contract owner can create missions");
+        setToastMessage(
+          "Only the contract owner can create missions. Please connect with the owner wallet."
+        );
+        setToastType("error");
+        setShowToast(true);
+        return;
       }
 
+      setLoadingMessage("Creating new mission...");
+
       // Convert amounts to Wei
-      const missionAmount = ethers.utils.parseEther(newMission.missionAmount || "0");
-      const rebornAmount = ethers.utils.parseEther(newMission.rebornAmount || "0");
+      const missionAmount = ethers.utils.parseEther(
+        newMission.missionAmount || "0"
+      );
+      const rebornAmount = ethers.utils.parseEther(
+        newMission.rebornAmount || "0"
+      );
       // Convert date to Unix timestamp
-      const expiryTimestamp = Math.floor(new Date(newMission.expiryDate).getTime() / 1000);
+      const expiryTimestamp = Math.floor(
+        new Date(newMission.expiryDate).getTime() / 1000
+      );
 
       console.log("Mission Parameters:", {
         name: newMission.missionName,
         missionAmount: missionAmount.toString(),
         rebornAmount: rebornAmount.toString(),
-        expiryDate: expiryTimestamp
+        expiryDate: expiryTimestamp,
       });
 
       // Call the contract method
@@ -349,7 +363,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
 
       console.log("Transaction sent:", tx.hash);
       setLoadingMessage("Waiting for confirmation...");
-      
+
       const receipt = await tx.wait();
       console.log("Transaction confirmed:", receipt);
 
@@ -361,15 +375,15 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
         missionName: "",
         missionAmount: "",
         rebornAmount: "",
-        expiryDate: ""
+        expiryDate: "",
       });
       getMissions();
     } catch (error: any) {
       console.error("Mission creation error:", error);
       const errorMessage = error.message || "Failed to create mission";
       setToastMessage(
-        error.message.includes("Only contract owner") 
-          ? "Only contract owner can create missions" 
+        error.message.includes("Only contract owner")
+          ? "Only contract owner can create missions"
           : handleError(error)
       );
       setToastType("error");
@@ -1057,31 +1071,54 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
                               </button>
                             </div>
                           </div>
-                          <div className="mt-4 grid grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-sm text-gray-400">
-                                Mission Amount
-                              </p>
-                              <p className="text-white font-medium">
-                                {ethers.utils.formatEther(
-                                  mission.missionAmount
-                                )}{" "}
-                                AVAX
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-400">
-                                Reborn Amount
-                              </p>
-                              <p className="text-white font-medium">
-                                {ethers.utils.formatEther(mission.rebornAmount)}{" "}
-                                AVAX
-                              </p>
-                            </div>
+
+                          {/* Mission Details */}
+                          <div
+                            className={`mt-4 grid ${
+                              !mission.missionAmount.isZero() &&
+                              !mission.rebornAmount.isZero()
+                                ? "grid-cols-2"
+                                : "grid-cols-1"
+                            } gap-4`}
+                          >
+                            {parseFloat(
+                              ethers.utils.formatEther(mission.missionAmount)
+                            ) > 0 && (
+                              <div className="bg-[#1a1f2d] rounded-xl p-4">
+                                <p className="text-[#9ca3af] text-sm">
+                                  Mission Amount
+                                </p>
+                                <p className="text-white text-xl font-bold mt-1">
+                                  {ethers.utils.formatEther(
+                                    mission.missionAmount
+                                  )}{" "}
+                                  AVAX
+                                </p>
+                              </div>
+                            )}
+                            {parseFloat(
+                              ethers.utils.formatEther(mission.rebornAmount)
+                            ) > 0 && (
+                              <div className="bg-[#1a1f2d] rounded-xl p-4">
+                                <p className="text-[#9ca3af] text-sm">
+                                  Reborn Amount
+                                </p>
+                                <p className="text-white text-xl font-bold mt-1">
+                                  {ethers.utils.formatEther(
+                                    mission.rebornAmount
+                                  )}{" "}
+                                  AVAX
+                                </p>
+                              </div>
+                            )}
                           </div>
-                          <div className="mt-4">
-                            <p className="text-sm text-gray-400">Expires</p>
-                            <p className="text-white font-medium">
+
+                          <div className="mt-4 bg-[#1a1f2d] rounded-xl p-4">
+                            <p className="text-[#9ca3af] text-sm">
+                              Time Remaining
+                            </p>
+                            <p className="text-white text-xl font-bold mt-1">
+                              Expires{" "}
                               {new Date(
                                 mission.expiryDate.toNumber() * 1000
                               ).toLocaleDateString()}

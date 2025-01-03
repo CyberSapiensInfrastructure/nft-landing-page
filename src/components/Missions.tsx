@@ -23,6 +23,20 @@ interface MissionsProps {
   account: string | null;
 }
 
+const formatExpiryDate = (timestamp: number) => {
+  const date = new Date(timestamp * 1000);
+  const now = new Date();
+  const diffTime = date.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return "Expired";
+  if (diffDays === 0) return "Expires Today";
+  if (diffDays === 1) return "Expires Tomorrow";
+  if (diffDays <= 7) return `Expires in ${diffDays} days`;
+  
+  return `Expires on ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+};
+
 export const Missions: React.FC<MissionsProps> = ({ provider, account }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -227,19 +241,37 @@ export const Missions: React.FC<MissionsProps> = ({ provider, account }) => {
 
                     {/* Mission Details */}
                     <div className="space-y-3">
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Mission Amount</span>
-                        <span className="text-white font-medium">{ethers.utils.formatEther(mission.missionAmount)} AVAX</span>
+                      <div className="grid grid-cols-1 gap-2">
+                        {parseFloat(ethers.utils.formatEther(mission.missionAmount)) > 0 && (
+                          <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
+                            <p className="text-xs text-gray-400 mb-1">Mission Amount</p>
+                            <p className="text-sm sm:text-base font-semibold text-white">
+                              {ethers.utils.formatEther(mission.missionAmount)} AVAX
+                            </p>
+                          </div>
+                        )}
+                        {parseFloat(ethers.utils.formatEther(mission.rebornAmount)) > 0 && (
+                          <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
+                            <p className="text-xs text-gray-400 mb-1">Reborn Amount</p>
+                            <p className="text-sm sm:text-base font-semibold text-white">
+                              {ethers.utils.formatEther(mission.rebornAmount)} AVAX
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Reborn Amount</span>
-                        <span className="text-white font-medium">{ethers.utils.formatEther(mission.rebornAmount)} AVAX</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2">
-                        <span className="text-gray-400">Expires</span>
-                        <span className="text-white font-medium">
-                          {new Date(mission.expiryDate.toNumber() * 1000).toLocaleDateString()}
-                        </span>
+
+                      <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <p className="text-xs text-gray-400">Time Remaining</p>
+                          <span className="text-xs font-medium text-white">
+                            {formatExpiryDate(mission.expiryDate.toNumber())}
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-600/30 rounded-full h-1.5">
+                          <div className="h-full rounded-full bg-purple-500" style={{
+                            width: `${Math.max(0, Math.min(100, (new Date(mission.expiryDate.toNumber() * 1000).getTime() - new Date().getTime()) / (7 * 24 * 60 * 60 * 1000) * 100))}%`
+                          }} />
+                        </div>
                       </div>
                     </div>
 

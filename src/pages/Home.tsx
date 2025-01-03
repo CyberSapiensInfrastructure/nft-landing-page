@@ -5,6 +5,12 @@ import { ethers } from "ethers";
 import { handleError } from "../utils/validation";
 import { F8__factory } from "../../typechain-types/factories/F8__factory";
 import { motion, AnimatePresence } from "framer-motion";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, EffectCards } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-cards';
 
 interface MissionData {
   missionId: string;
@@ -128,31 +134,33 @@ const MissionDetailModal = ({
 
             {/* Mission Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-slate-700/50 rounded-xl p-4 space-y-1">
-                <p className="text-sm text-gray-400">Mission Amount</p>
-                <p className="text-lg font-semibold text-white">
-                  {ethers.utils.formatEther(mission.missionAmount)} AVAX
-                </p>
-              </div>
-              <div className="bg-slate-700/50 rounded-xl p-4 space-y-1">
-                <p className="text-sm text-gray-400">Reborn Amount</p>
-                <p className="text-lg font-semibold text-white">
-                  {ethers.utils.formatEther(mission.rebornAmount)} AVAX
-                </p>
-              </div>
+              {parseFloat(ethers.utils.formatEther(mission.missionAmount)) > 0 && (
+                <div className={`bg-slate-700/50 rounded-xl p-4 space-y-1 ${
+                  parseFloat(ethers.utils.formatEther(mission.rebornAmount)) === 0 ? 'md:col-span-2' : ''
+                }`}>
+                  <p className="text-sm text-gray-400">Mission Amount</p>
+                  <p className="text-lg font-semibold text-white">
+                    {ethers.utils.formatEther(mission.missionAmount)} AVAX
+                  </p>
+                </div>
+              )}
+              {parseFloat(ethers.utils.formatEther(mission.rebornAmount)) > 0 && (
+                <div className={`bg-slate-700/50 rounded-xl p-4 space-y-1 ${
+                  parseFloat(ethers.utils.formatEther(mission.missionAmount)) === 0 ? 'md:col-span-2' : ''
+                }`}>
+                  <p className="text-sm text-gray-400">Reborn Amount</p>
+                  <p className="text-lg font-semibold text-white">
+                    {ethers.utils.formatEther(mission.rebornAmount)} AVAX
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Expiry Date */}
             <div className="bg-slate-700/50 rounded-xl p-4 space-y-1">
               <p className="text-sm text-gray-400">Expires On</p>
               <p className="text-lg font-semibold text-white">
-                {new Date(
-                  mission.expiryDate.toNumber() * 1000
-                ).toLocaleDateString()}{" "}
-                at{" "}
-                {new Date(
-                  mission.expiryDate.toNumber() * 1000
-                ).toLocaleTimeString()}
+                {formatExpiryDate(mission.expiryDate.toNumber())}
               </p>
             </div>
           </div>
@@ -193,11 +201,14 @@ const MissionCard = ({
   onViewDetails?: () => void;
 }) => {
   const isExpired = new Date(mission.expiryDate.toNumber() * 1000) < new Date();
+  const missionAmountValue = parseFloat(ethers.utils.formatEther(mission.missionAmount));
+  const rebornAmountValue = parseFloat(ethers.utils.formatEther(mission.rebornAmount));
+  const hasAnyAmount = missionAmountValue > 0 || rebornAmountValue > 0;
 
   return (
     <div
       onClick={onViewDetails}
-      className={`bg-slate-800/50 backdrop-blur-sm rounded-xl border transition-all duration-300 overflow-hidden group hover:shadow-xl hover:-translate-y-1 cursor-pointer
+      className={`bg-slate-800/50 backdrop-blur-sm rounded-xl border transition-all duration-300 overflow-hidden hover:shadow-xl cursor-pointer h-full flex flex-col
         ${
           mission.isComplete
             ? "border-green-500/20 hover:border-green-500/40"
@@ -206,7 +217,7 @@ const MissionCard = ({
             : "border-slate-700/50 hover:border-slate-600/50"
         }`}
     >
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden group/image">
         <div
           className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 ${
             isExpired ? "bg-red-900/20" : ""
@@ -215,7 +226,7 @@ const MissionCard = ({
         <img
           src="/src/assets/img/mission.png"
           alt={mission.missionName}
-          className={`w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ${
+          className={`w-full h-full object-cover transition-transform duration-700 group-hover/image:scale-110 ${
             isExpired ? "grayscale" : ""
           }`}
         />
@@ -239,31 +250,37 @@ const MissionCard = ({
         </div>
       </div>
 
-      <div className="p-4 sm:p-6 space-y-4">
+      <div className="flex flex-col flex-1 p-4 sm:p-6">
         {/* Mission Header */}
-        <div>
-          <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-purple-400 transition-colors">
+        <div className="mb-4">
+          <h3 className="text-lg sm:text-xl font-bold text-white hover:text-purple-400 transition-colors">
             {mission.missionName}
           </h3>
           <p className="text-sm text-gray-400">Mission #{mission.missionId}</p>
         </div>
 
         {/* Mission Details */}
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
-              <p className="text-xs text-gray-400 mb-1">Mission Amount</p>
-              <p className="text-sm sm:text-base font-semibold text-white">
-                {ethers.utils.formatEther(mission.missionAmount)} AVAX
-              </p>
+        <div className="space-y-3 flex-1">
+          {hasAnyAmount && (
+            <div className="grid grid-cols-2 gap-2">
+              {missionAmountValue > 0 && (
+                <div className={`bg-slate-700/30 backdrop-blur-sm rounded-lg p-3 ${rebornAmountValue === 0 ? 'col-span-2' : ''}`}>
+                  <p className="text-xs text-gray-400 mb-1">Mission Amount</p>
+                  <p className="text-sm sm:text-base font-semibold text-white">
+                    {missionAmountValue} AVAX
+                  </p>
+                </div>
+              )}
+              {rebornAmountValue > 0 && (
+                <div className={`bg-slate-700/30 backdrop-blur-sm rounded-lg p-3 ${missionAmountValue === 0 ? 'col-span-2' : ''}`}>
+                  <p className="text-xs text-gray-400 mb-1">Reborn Amount</p>
+                  <p className="text-sm sm:text-base font-semibold text-white">
+                    {rebornAmountValue} AVAX
+                  </p>
+                </div>
+              )}
             </div>
-            <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
-              <p className="text-xs text-gray-400 mb-1">Reborn Amount</p>
-              <p className="text-sm sm:text-base font-semibold text-white">
-                {ethers.utils.formatEther(mission.rebornAmount)} AVAX
-              </p>
-            </div>
-          </div>
+          )}
 
           <div className="bg-slate-700/30 backdrop-blur-sm rounded-lg p-3">
             <div className="flex justify-between items-center mb-2">
@@ -313,7 +330,7 @@ const MissionCard = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
+        <div className="mt-auto pt-4">
           <div className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 px-4 py-2.5 rounded-lg font-medium text-white text-sm inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-all duration-300">
             <svg
               className="w-4 h-4"
@@ -338,56 +355,12 @@ const MissionCard = ({
 
 const MissionSlider = React.memo(
   ({ missions }: { missions: MissionData[] }) => {
-    const [scrollPosition, setScrollPosition] = useState(0);
-    const [selectedMission, setSelectedMission] = useState<MissionData | null>(
-      null
-    );
-    const sliderRef = useRef<HTMLDivElement>(null);
+    const [selectedMission, setSelectedMission] = useState<MissionData | null>(null);
     const activeMissions = missions.filter(
       (mission) =>
         !mission.isComplete &&
         new Date(mission.expiryDate.toNumber() * 1000) > new Date()
     );
-
-    const scrollTo = (direction: "left" | "right") => {
-      if (!sliderRef.current) return;
-
-      // Adjust scroll amount based on screen size
-      const isMobile = window.innerWidth < 768;
-      const scrollAmount = isMobile ? 350 : 350 + 24; // card width + gap
-      const maxScroll =
-        sliderRef.current.scrollWidth - sliderRef.current.clientWidth;
-
-      if (direction === "left") {
-        const newPosition = Math.max(0, scrollPosition - scrollAmount);
-        setScrollPosition(newPosition);
-        sliderRef.current.scrollTo({ left: newPosition, behavior: "smooth" });
-      } else {
-        const newPosition = Math.min(maxScroll, scrollPosition + scrollAmount);
-        setScrollPosition(newPosition);
-        sliderRef.current.scrollTo({ left: newPosition, behavior: "smooth" });
-      }
-    };
-
-    const handleScroll = useCallback(() => {
-      if (sliderRef.current) {
-        setScrollPosition(sliderRef.current.scrollLeft);
-      }
-    }, []);
-
-    useEffect(() => {
-      const slider = sliderRef.current;
-      if (slider) {
-        slider.addEventListener("scroll", handleScroll);
-        return () => slider.removeEventListener("scroll", handleScroll);
-      }
-    }, [handleScroll]);
-
-    const showLeftArrow = scrollPosition > 0;
-    const showRightArrow = sliderRef.current
-      ? scrollPosition <
-        sliderRef.current.scrollWidth - sliderRef.current.clientWidth - 10
-      : true;
 
     if (activeMissions.length === 0) {
       return (
@@ -416,141 +389,62 @@ const MissionSlider = React.memo(
     }
 
     return (
-      <div className="relative group">
-        {/* Slider Container */}
+      <>
+        {/* Active Mission Counter */}
+        <div className="mb-6 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-sm text-white border border-white/10 inline-flex items-center">
+          <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+          {activeMissions.length} Active Mission{activeMissions.length !== 1 ? "s" : ""}
+        </div>
+
         <div className="relative">
-          <div
-            ref={sliderRef}
-            className="flex overflow-x-auto gap-6 md:gap-4 pb-6 snap-x snap-mandatory scrollbar-hide scroll-smooth"
+          <Swiper
+            modules={[Navigation, Pagination, EffectCards]}
+            spaceBetween={24}
+            slidesPerView={1}
+            navigation={{
+              nextEl: '.swiper-button-next',
+              prevEl: '.swiper-button-prev',
+            }}
+            pagination={{
+              clickable: true,
+              el: '.swiper-pagination',
+            }}
+            breakpoints={{
+              640: {
+                slidesPerView: 2,
+                spaceBetween: 20,
+              },
+              1024: {
+                slidesPerView: 3,
+                spaceBetween: 24,
+              },
+            }}
+            className="pb-12"
           >
             {activeMissions.map((mission) => (
-              <div
-                key={mission.missionId}
-                className="min-w-[calc(100vw-32px)] md:min-w-[350px] snap-start flex-shrink-0"
-              >
+              <SwiperSlide key={mission.missionId}>
                 <MissionCard
                   mission={mission}
                   onViewDetails={() => setSelectedMission(mission)}
                 />
-              </div>
+              </SwiperSlide>
             ))}
-          </div>
+            <div className="swiper-button-prev !text-white after:!text-2xl"></div>
+            <div className="swiper-button-next !text-white after:!text-2xl"></div>
+            <div className="swiper-pagination !bottom-0 !text-white"></div>
+          </Swiper>
 
-          {/* Navigation Arrows - Hide on Mobile */}
-          {showLeftArrow && (
-            <button
-              onClick={() => scrollTo("left")}
-              className="hidden md:flex absolute -left-3 lg:-left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 items-center justify-center text-white transition-all duration-300 hover:bg-black/70 hover:scale-110 z-20 opacity-0 group-hover:opacity-100"
-              aria-label="Previous missions"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-          )}
-
-          {showRightArrow && (
-            <button
-              onClick={() => scrollTo("right")}
-              className="hidden md:flex absolute -right-3 lg:-right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 items-center justify-center text-white transition-all duration-300 hover:bg-black/70 hover:scale-110 z-20 opacity-0 group-hover:opacity-100"
-              aria-label="Next missions"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          )}
-
-          {/* Gradient Overlays - Adjusted opacity and responsive behavior */}
-          <div className="absolute left-0 top-0 bottom-6 w-8 md:w-12 bg-gradient-to-r from-[#0c0c0c]/90 to-transparent pointer-events-none z-10" />
-          <div className="absolute right-0 top-0 bottom-6 w-8 md:w-12 bg-gradient-to-l from-[#0c0c0c]/90 to-transparent pointer-events-none z-10" />
-        </div>
-
-        {/* Scroll Indicator - Show only on desktop */}
-        {activeMissions.length > 3 && (
-          <div className="hidden md:flex absolute -bottom-6 left-1/2 -translate-x-1/2 items-center gap-2 text-sm text-gray-400">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
+          {/* Mission Detail Modal */}
+          <AnimatePresence>
+            {selectedMission && (
+              <MissionDetailModal
+                mission={selectedMission}
+                onClose={() => setSelectedMission(null)}
               />
-            </svg>
-            <span>Scroll to see more missions</span>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </div>
-        )}
-
-        {/* Mobile Scroll Indicator - Dots */}
-        <div className="flex md:hidden justify-center gap-2 mt-4">
-          {activeMissions.map((_, index) => {
-            const cardWidth = 350; // Approximate card width
-            const currentCard = Math.round(scrollPosition / cardWidth);
-            return (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  currentCard === index ? "bg-purple-500 w-4" : "bg-slate-600"
-                }`}
-              />
-            );
-          })}
+            )}
+          </AnimatePresence>
         </div>
-
-        {/* Mission Counter */}
-        <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/50 backdrop-blur-sm text-sm text-white border border-white/10">
-          {activeMissions.length} Active Mission
-          {activeMissions.length !== 1 ? "s" : ""}
-        </div>
-
-        {/* Mission Detail Modal */}
-        <AnimatePresence>
-          {selectedMission && (
-            <MissionDetailModal
-              mission={selectedMission}
-              onClose={() => setSelectedMission(null)}
-            />
-          )}
-        </AnimatePresence>
-      </div>
+      </>
     );
   }
 );
@@ -616,7 +510,7 @@ const Home: React.FC = () => {
       {/* Missions Section */}
       <section className="py-20 bg-[#0c0c0c]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-12">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
             <div>
               <h2 className="text-3xl font-bold text-white mb-2">
                 Active Missions
