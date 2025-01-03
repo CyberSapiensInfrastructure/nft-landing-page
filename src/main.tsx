@@ -9,6 +9,7 @@ import { GlobalLoader } from './components/GlobalLoader';
 import './index.css';
 import { WalletProvider } from './context/WalletContext';
 import { NFTProvider } from './context/NFTContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 // Lazy loaded components
 const Home = lazy(() => import('./pages/Home'));
@@ -53,27 +54,29 @@ export const connectWallet = async () => {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <WalletProvider>
-      <NFTProvider>
-        <Provider store={store}>
-          <BrowserRouter>
-            <Suspense fallback={<GlobalLoader />}>
-              <Routes>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Home />} />
-                  <Route path="list" element={<NFTListPage />} />
-                  <Route path="nft/:id" element={<NFTDetail />} />
-                  <Route path="missions" element={<Missions />} />
-                  <Route path="community" element={<Community />} />
-                  <Route path="about" element={<About />} />
-                  <Route path="*" element={<Error />} />
-                </Route>
-                <Route path="/admin" element={<AdminPage />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </Provider>
-      </NFTProvider>
-    </WalletProvider>
+    <NotificationProvider>
+      <WalletProvider>
+        <NFTProvider>
+          <Provider store={store}>
+            <BrowserRouter>
+              <Suspense fallback={<GlobalLoader />}>
+                <Routes>
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<Home />} />
+                    <Route path="list" element={<NFTListPage />} />
+                    <Route path="nft/:id" element={<NFTDetail />} />
+                    <Route path="missions" element={<Missions />} />
+                    <Route path="community" element={<Community />} />
+                    <Route path="about" element={<About />} />
+                    <Route path="*" element={<Error />} />
+                  </Route>
+                  <Route path="/admin" element={<AdminPage />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </Provider>
+        </NFTProvider>
+      </WalletProvider>
+    </NotificationProvider>
   </React.StrictMode>
 );

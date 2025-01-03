@@ -4,8 +4,8 @@ import { F8__factory } from "../../../typechain-types/factories/F8__factory";
 import { F8 } from "../../../typechain-types/F8";
 import { FormInput } from "../common/FormInput";
 import { LoadingOverlay } from "../common/LoadingOverlay";
-import { Toast } from "../common/Toast";
 import { validateEthereumAddress, handleError } from "../../utils/validation";
+import { useNotification } from "../../context/NotificationContext";
 
 const F8_ADDRESS = "0x4684059c10Cc9b9E3013c953182E2e097B8d089d";
 
@@ -50,6 +50,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
   provider,
   account,
 }) => {
+  const { showNotification } = useNotification();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [f8Contract, setF8Contract] = useState<F8 | null>(null);
@@ -57,12 +58,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
   const [mintAddressError, setMintAddressError] = useState("");
   const [nftMetadata, setNftMetadata] = useState<NFTMetadata[]>([]);
   const [missions, setMissions] = useState<MissionData[]>([]);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error">("success");
-  const [showToast, setShowToast] = useState(false);
-  const [activeTab, setActiveTab] = useState<"mint" | "list" | "missions">(
-    "mint"
-  );
+  const [activeTab, setActiveTab] = useState<"mint" | "list" | "missions">("mint");
   const [selectedTokenId, setSelectedTokenId] = useState("");
   const [showNewMissionForm, setShowNewMissionForm] = useState(false);
   const [newMission, setNewMission] = useState<NewMissionForm>({
@@ -103,16 +99,12 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
         setF8Contract(contract);
       } catch (error) {
         console.error("Error initializing contract:", error);
-        setToastMessage(
-          "Failed to initialize contract. Please check your wallet connection."
-        );
-        setToastType("error");
-        setShowToast(true);
+        showNotification('error', 'Failed to initialize contract. Please check your wallet connection.');
       }
     };
 
     initializeContract();
-  }, [provider, account]);
+  }, [provider, account, showNotification]);
 
   // Handle minting NFT
   const handleMint = async () => {
@@ -138,16 +130,12 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
       setLoadingMessage("Waiting for confirmation...");
       await tx.wait();
 
-      setToastMessage("NFT minted successfully!");
-      setToastType("success");
-      setShowToast(true);
+      showNotification('success', 'NFT minted successfully!');
       setMintAddress("");
       setMintAddressError("");
     } catch (error) {
       const errorMessage = handleError(error);
-      setToastMessage(errorMessage);
-      setToastType("error");
-      setShowToast(true);
+      showNotification('error', errorMessage);
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -168,9 +156,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
         const uri = await f8Contract.tokenURI(tokenId);
         try {
           const proxyUrl = "https://api.allorigins.win/get?url=";
-          const response = await fetch(
-            proxyUrl + encodeURIComponent(`${uri}.json`)
-          );
+          const response = await fetch(proxyUrl + encodeURIComponent(`${uri}.json`));
           const proxyData = await response.json();
           const metadata = JSON.parse(proxyData.contents);
 
@@ -178,14 +164,11 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
             tokenId: tokenId.toString(),
             name: metadata.name || `F8 NFT #${tokenId}`,
             description: metadata.description || "Providence NFT",
-            image:
-              metadata.image || `http://cybersapiens.xyz/f8/img/${tokenId}.png`,
+            image: metadata.image || `http://cybersapiens.xyz/f8/img/${tokenId}.png`,
             attributes: metadata.attributes || [],
             attributesText: metadata.attributes
               ? metadata.attributes
-                  .map(
-                    (attr: NFTAttribute) => `${attr.trait_type}: ${attr.value}`
-                  )
+                  .map((attr: NFTAttribute) => `${attr.trait_type}: ${attr.value}`)
                   .join(", ")
               : "",
             uri,
@@ -207,14 +190,10 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
       const metadata = await Promise.all(metadataPromises);
       setNftMetadata(metadata);
 
-      setToastMessage("NFTs fetched successfully!");
-      setToastType("success");
-      setShowToast(true);
+      showNotification('success', 'NFTs fetched successfully!');
     } catch (error) {
       const errorMessage = handleError(error);
-      setToastMessage(errorMessage);
-      setToastType("error");
-      setShowToast(true);
+      showNotification('error', errorMessage);
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -273,14 +252,10 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
 
       setMissions(formattedMissions);
 
-      setToastMessage("Missions fetched successfully!");
-      setToastType("success");
-      setShowToast(true);
+      showNotification('success', 'Missions fetched successfully!');
     } catch (error) {
       const errorMessage = handleError(error);
-      setToastMessage(errorMessage);
-      setToastType("error");
-      setShowToast(true);
+      showNotification('error', errorMessage);
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -309,11 +284,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
   const handleCreateMission = async () => {
     if (!f8Contract) {
       console.error("F8 contract is not initialized");
-      setToastMessage(
-        "Contract not initialized. Please check your wallet connection."
-      );
-      setToastType("error");
-      setShowToast(true);
+      showNotification('error', 'Contract not initialized. Please check your wallet connection.');
       return;
     }
 
@@ -324,11 +295,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
       // First check if the connected account is the owner
       const contractOwner = await f8Contract.owner();
       if (contractOwner.toLowerCase() !== account?.toLowerCase()) {
-        setToastMessage(
-          "Only the contract owner can create missions. Please connect with the owner wallet."
-        );
-        setToastType("error");
-        setShowToast(true);
+        showNotification('error', 'Only the contract owner can create missions. Please connect with the owner wallet.');
         return;
       }
 
@@ -367,9 +334,7 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
       const receipt = await tx.wait();
       console.log("Transaction confirmed:", receipt);
 
-      setToastMessage("Mission created successfully!");
-      setToastType("success");
-      setShowToast(true);
+      showNotification('success', 'Mission created successfully!');
       setShowNewMissionForm(false);
       setNewMission({
         missionName: "",
@@ -381,13 +346,9 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
     } catch (error: any) {
       console.error("Mission creation error:", error);
       const errorMessage = error.message || "Failed to create mission";
-      setToastMessage(
-        error.message.includes("Only contract owner")
-          ? "Only contract owner can create missions"
-          : handleError(error)
-      );
-      setToastType("error");
-      setShowToast(true);
+      showNotification('error', error.message.includes("Only contract owner")
+        ? "Only contract owner can create missions"
+        : handleError(error));
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -432,16 +393,12 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
       setLoadingMessage("Waiting for confirmation...");
       await tx.wait();
 
-      setToastMessage("Mission updated successfully!");
-      setToastType("success");
-      setShowToast(true);
+      showNotification('success', 'Mission updated successfully!');
       setEditingMission(null);
       getMissions();
     } catch (error) {
       const errorMessage = handleError(error);
-      setToastMessage(errorMessage);
-      setToastType("error");
-      setShowToast(true);
+      showNotification('error', errorMessage);
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -481,17 +438,13 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
       setLoadingMessage("Waiting for confirmation...");
       await tx.wait();
 
-      setToastMessage("Mission reward claimed successfully!");
-      setToastType("success");
-      setShowToast(true);
+      showNotification('success', 'Mission reward claimed successfully!');
 
       // Refresh missions after claiming
       getMissions();
     } catch (error) {
       const errorMessage = handleError(error);
-      setToastMessage(errorMessage);
-      setToastType("error");
-      setShowToast(true);
+      showNotification('error', errorMessage);
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -1175,15 +1128,6 @@ export const NFTManagement: React.FC<NFTManagementProps> = ({
 
       {/* Loading Overlay */}
       {isLoading && <LoadingOverlay message={loadingMessage} />}
-
-      {/* Toast Notification */}
-      {showToast && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
-        />
-      )}
     </div>
   );
 };

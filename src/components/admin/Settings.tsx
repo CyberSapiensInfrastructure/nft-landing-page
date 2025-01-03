@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { ethers } from 'ethers';
+import { useNotification } from '../../context/NotificationContext';
 
 interface SettingsProps {
   provider: ethers.providers.Web3Provider | null;
@@ -22,6 +23,8 @@ interface SettingSection {
 
 export const Settings: React.FC<SettingsProps> = () => {
   const [activeSection, setActiveSection] = useState('general');
+  const { showNotification } = useNotification();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const settingSections: SettingSection[] = [
     {
@@ -55,6 +58,23 @@ export const Settings: React.FC<SettingsProps> = () => {
       ]
     }
   ];
+
+  const handleSave = async () => {
+    try {
+      setIsSubmitting(true);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      showNotification('success', 'Settings saved successfully');
+    } catch (error) {
+      showNotification('error', 'Failed to save settings. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    showNotification('info', 'Changes discarded');
+  };
 
   return (
     <div className="space-y-6">
@@ -151,16 +171,27 @@ export const Settings: React.FC<SettingsProps> = () => {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    onClick={handleCancel}
                     className="px-4 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-600"
+                    disabled={isSubmitting}
                   >
                     Cancel
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-cyan-400 text-white rounded-xl hover:opacity-90"
+                    onClick={handleSave}
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-cyan-400 text-white rounded-xl hover:opacity-90 disabled:opacity-50 flex items-center space-x-2"
                   >
-                    Save Changes
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      'Save Changes'
+                    )}
                   </motion.button>
                 </div>
               </motion.div>
